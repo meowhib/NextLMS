@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Define your Course model
+model Course {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  name      String
+  index     Int
+  chapters  Chapter[]
+}
+
+// Define your Chapter model
+model Chapter {
+  id          Int       @id @default(autoincrement())
+  name        String
+  courseSlug  String
+  index       Int
+  course      Course    @relation(fields: [courseSlug], references: [slug])
+  lessons     Lesson[]
+}
+
+// Define your Lesson model
+model Lesson {
+  id          Int      @id @default(autoincrement())
+  name        String
+  chapterId   Int
+  index       Int
+  progress    Int      @default(0)
+  completed   Boolean  @default(false)
+  length      Int      // Length of the lesson in minutes (assuming)
+  chapter     Chapter  @relation(fields: [chapterId], references: [id])
+}

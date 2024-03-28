@@ -9,6 +9,12 @@ import {
   Search,
   Users,
   PlusIcon,
+  Hourglass,
+  ListChecks,
+  Presentation,
+  GraduationCap,
+  GripHorizontal,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,7 +87,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Minutes learned
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Hourglass className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1789</div>
@@ -95,7 +101,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Lessons completed
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <ListChecks className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">48</div>
@@ -107,7 +113,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total lessons</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <Presentation className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">258</div>
@@ -119,7 +125,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total courses</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
@@ -141,10 +147,17 @@ export default function DashboardPage() {
               key={course.slug}
               passHref={true}
             >
-              <Card>
+              <Card className="group">
                 <CardHeader>
-                  <CardTitle className="font-bold line-clamp-1">
+                  <CardTitle className="font-bold line-clamp-1 flex flex-row items-center justify-between space-y-0 pb-2">
                     {course.title}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className=""
+                    >
+                      <GripVertical className="h-4 w-4 text-muted-foreground group-hover:flex hidden" />
+                    </Button>
                   </CardTitle>
                   {course.description && (
                     <CardDescription className="line-clamp-2">
