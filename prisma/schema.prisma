@@ -16,7 +16,7 @@ datasource db {
 // Define your Course model
 model Course {
   id        Int      @id @default(autoincrement())
-  slug      String   @unique
+  slug      String 
   name      String
   index     Int
   chapters  Chapter[]
@@ -26,9 +26,9 @@ model Course {
 model Chapter {
   id          Int       @id @default(autoincrement())
   name        String
-  courseSlug  String
+  courseId    Int
+  course      Course    @relation(fields: [courseId], references: [id])
   index       Int
-  course      Course    @relation(fields: [courseSlug], references: [slug])
   lessons     Lesson[]
 }
 

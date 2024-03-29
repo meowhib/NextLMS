@@ -7,13 +7,12 @@ import {
 } from "@/components/ui/accordion";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import VideoComponent from "@/components/ui/video";
 
 export default function CoursesPage({
   params: { slug },
@@ -22,14 +21,18 @@ export default function CoursesPage({
     slug: string;
   };
 }) {
+  const videoURL = "https://dlsu5svezbvdk.cloudfront.net/4+-+Important+Message.mp4";
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div className="flex-none col-span-4 space-y-4 rounded-lg">
           <AspectRatio
             ratio={16 / 9}
-            className="bg-muted rounded-lg bg-gray-500"
-          ></AspectRatio>
+            className="bg-muted rounded-lg bg-gray-500 overflow-hidden"
+          >
+            <VideoComponent src={videoURL} />
+          </AspectRatio>
           <h1 className="text-3xl font-semibold">{slug}</h1>
           <div className="space-y-2">
             <h1 className="text-xl font-semibold">Notes:</h1>
