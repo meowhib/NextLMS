@@ -4,9 +4,12 @@ import {
   CircleUser,
   CreditCard,
   DollarSign,
+  Headset,
   Menu,
   Package2,
+  ScanSearch,
   Search,
+  Settings,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import ScanButton from "@/components/ui/scan-button";
 
 export default function Dashboard({ children }: { children: React.ReactNode }) {
   return (
@@ -118,8 +122,15 @@ export default function Dashboard({ children }: { children: React.ReactNode }) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Headset className="h-4 w-4 mr-2" />
+                Support
+              </DropdownMenuItem>
+              <ScanButton />
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>

@@ -16,7 +16,7 @@ datasource db {
 // Define your Course model
 model Course {
   id        Int      @id @default(autoincrement())
-  slug      String 
+  slug      String   @unique
   name      String
   index     Int
   chapters  Chapter[]
@@ -27,7 +27,7 @@ model Chapter {
   id          Int       @id @default(autoincrement())
   name        String
   courseId    Int
-  course      Course    @relation(fields: [courseId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   index       Int
   lessons     Lesson[]
 }
@@ -41,5 +41,5 @@ model Lesson {
   progress    Int      @default(0)
   completed   Boolean  @default(false)
   length      Int      // Length of the lesson in minutes (assuming)
-  chapter     Chapter  @relation(fields: [chapterId], references: [id])
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 }

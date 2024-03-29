@@ -98,8 +98,11 @@ export async function scanCourses() {
 
       for (const lessonFile of lessons) {
         const { name, index } = getNameAndIndex(lessonFile);
-        console.log(`Scanning lesson: ${name}`);
-        await createLesson(chapter.id, name, index);
+        
+        if (name.endsWith('.mp4')) {
+          console.log(`Scanning lesson: ${name}`);
+          const lesson = await createLesson(chapter.id, name, index);
+        }
       }
     }
   }
