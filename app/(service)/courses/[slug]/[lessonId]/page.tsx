@@ -5,11 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import VideoComponent from "@/components/ui/video";
@@ -30,17 +26,17 @@ export default async function CoursesPage({
 }) {
   // const videoURL = "https://dlsu5svezbvdk.cloudfront.net/4+-+Important+Message.mp4";
   const course = await getCourse(slug);
-  
+
   if (!course) {
     redirect("/dashboard");
   }
 
   const lesson = await getLesson(lessonId);
-  
+
   if (!lesson) {
-      redirect(`/courses/${slug}`);
-    }
-    
+    redirect(`/courses/${slug}`);
+  }
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -49,7 +45,11 @@ export default async function CoursesPage({
             ratio={16 / 9}
             className="bg-muted rounded-lg bg-gray-600 overflow-hidden"
           >
-            {/* <VideoComponent src={"https://www.youtube.com/watch?v=Hoe5Lp2yT5A"} /> */}
+            <video
+              src={`/api/video?lessonPath=${
+                course.name + "/" + lesson.chapter.name + "/" + lesson.name
+              }`}
+            ></video>
           </AspectRatio>
           <h1 className="text-3xl font-semibold">{lesson.name}</h1>
           <div className="space-y-2">
@@ -63,23 +63,29 @@ export default async function CoursesPage({
               {course.chapters.map((chapter) => (
                 <AccordionItem value={chapter.id.toString()} key={chapter.id}>
                   <AccordionTrigger className="px-4">
-                    <h1 className="text-lg font-semibold no-underline">{chapter.name}</h1>
+                    <h1 className="text-lg font-semibold no-underline">
+                      {chapter.name}
+                    </h1>
                   </AccordionTrigger>
                   <AccordionContent>
-                      {chapter.lessons.map((lesson) => (
-                        <Link href={`/courses/${slug}/${lesson.id}`} key={lesson.id}>
-                          <div className="p-4 hover:bg-gray-200 rounded-lg text-left transition-all cursor-pointer flex flex-row space-x-2">
-                            {
-                                lesson.completed ? (
-                                    <CircleCheckBig size={24} className="text-gray-400" />
-                                ) : (
-                                    <Circle size={24} className="text-gray-400" />
-                                )
-                            }
-                            <p>{lesson.name}</p>
-                          </div>
-                        </Link>
-                      ))}
+                    {chapter.lessons.map((lesson) => (
+                      <Link
+                        href={`/courses/${slug}/${lesson.id}`}
+                        key={lesson.id}
+                      >
+                        <div className="p-4 hover:bg-gray-200 rounded-lg text-left transition-all cursor-pointer flex flex-row space-x-2">
+                          {lesson.completed ? (
+                            <CircleCheckBig
+                              size={24}
+                              className="text-gray-400"
+                            />
+                          ) : (
+                            <Circle size={24} className="text-gray-400" />
+                          )}
+                          <p>{lesson.name}</p>
+                        </div>
+                      </Link>
+                    ))}
                   </AccordionContent>
                 </AccordionItem>
               ))}
