@@ -15,31 +15,63 @@ datasource db {
 
 // Define your Course model
 model Course {
-  id        Int      @id @default(autoincrement())
-  slug      String   @unique
-  name      String
-  index     Int
-  chapters  Chapter[]
+  id            Int         @id @default(autoincrement())
+  slug          String      @unique
+  name          String
+  index         Int
+  chapters      Chapter[]
+  enrollments   Enrollment[]
 }
 
 // Define your Chapter model
 model Chapter {
-  id          Int       @id @default(autoincrement())
-  name        String
-  courseId    Int
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  index       Int
-  lessons     Lesson[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  index     Int
+  lessons   Lesson[]
 }
 
 // Define your Lesson model
 model Lesson {
-  id          Int      @id @default(autoincrement())
+  id              Int              @id @default(autoincrement())
+  name            String
+  chapterId       Int
+  index           Int
+  length          Int              // Length of the lesson in minutes (assuming)
+  chapter         Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  lessonProgress  LessonProgress[]
+}
+
+// Define your Student model
+model Student {
+  id          String      @id @default(uuid())
   name        String
-  chapterId   Int
-  index       Int
-  progress    Int      @default(0)
-  completed   Boolean  @default(false)
-  length      Int      // Length of the lesson in minutes (assuming)
-  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  lastName    String?
+  email       String      @unique
+  enrollments Enrollment[]
+}
+
+// Define your Enrollment model
+model Enrollment {
+  id          Int             @id @default(autoincrement())
+  studentId   String
+  courseId    Int
+  student     Student         @relation(fields: [studentId], references: [id])
+  course      Course          @relation(fields: [courseId], references: [id])
+  progress    Int             @default(0)
+  completed   Boolean         @default(false)
+  lessonProgress LessonProgress[]
+}
+
+// Define your LessonProgress model
+model LessonProgress {
+  id          Int        @id @default(autoincrement())
+  lessonId    Int
+  lesson      Lesson     @relation(fields: [lessonId], references: [id])
+  enrollmentId Int
+  enrollment  Enrollment @relation(fields: [enrollmentId], references: [id])
+  progress    Int        @default(0)
+  completed   Boolean    @default(false)
 }
