@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,17 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Define your Course model
 model Course {
   id            Int         @id @default(autoincrement())
   slug          String      @unique
   name          String
   index         Int
   chapters      Chapter[]
-  enrollments   Enrollment[]
 }
 
-// Define your Chapter model
 model Chapter {
   id        Int      @id @default(autoincrement())
   name      String
@@ -33,45 +24,13 @@ model Chapter {
   lessons   Lesson[]
 }
 
-// Define your Lesson model
 model Lesson {
-  id              Int              @id @default(autoincrement())
-  name            String
-  chapterId       Int
-  index           Int
-  length          Int              // Length of the lesson in minutes (assuming)
-  chapter         Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  lessonProgress  LessonProgress[]
-}
-
-// Define your Student model
-model Student {
-  id          String      @id @default(uuid())
-  name        String
-  lastName    String?
-  email       String      @unique
-  enrollments Enrollment[]
-}
-
-// Define your Enrollment model
-model Enrollment {
-  id          Int             @id @default(autoincrement())
-  studentId   String
-  courseId    Int
-  student     Student         @relation(fields: [studentId], references: [id])
-  course      Course          @relation(fields: [courseId], references: [id])
-  progress    Int             @default(0)
-  completed   Boolean         @default(false)
-  lessonProgress LessonProgress[]
-}
-
-// Define your LessonProgress model
-model LessonProgress {
-  id          Int        @id @default(autoincrement())
-  lessonId    Int
-  lesson      Lesson     @relation(fields: [lessonId], references: [id])
-  enrollmentId Int
-  enrollment  Enrollment @relation(fields: [enrollmentId], references: [id])
-  progress    Int        @default(0)
-  completed   Boolean    @default(false)
+  id             Int             @id @default(autoincrement())
+  name           String
+  chapterId      Int
+  index          Int
+  length         Int             
+  chapter        Chapter         @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  progress       Int             @default(0)
+  completed      Boolean         @default(false)
 }

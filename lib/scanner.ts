@@ -1,9 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import prisma from './prisma';
-var slugify = require('slugify')
+import * as fs from "fs";
+import * as path from "path";
+import prisma from "./prisma";
+var slugify = require("slugify");
 
-const rootDir = 'public/courses';
+const rootDir = "public/courses";
 
 function getNameAndIndex(input: string) {
   const regex = /^(\d+)\s*-\s*(.*)/;
@@ -19,15 +19,17 @@ function getNameAndIndex(input: string) {
 }
 
 function listDirectories(source: string) {
-  return fs.readdirSync(source, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name);
+  return fs
+    .readdirSync(source, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 }
 
 function listFiles(source: string) {
-  return fs.readdirSync(source, { withFileTypes: true })
-    .filter(dirent => dirent.isFile())
-    .map(dirent => dirent.name);
+  return fs
+    .readdirSync(source, { withFileTypes: true })
+    .filter((dirent) => dirent.isFile())
+    .map((dirent) => dirent.name);
 }
 
 async function createCourse(slug: string, title: string) {
@@ -51,7 +53,7 @@ async function createChapter(courseId: number, name: string, index: number) {
         connect: {
           id: courseId,
         },
-      }
+      },
     },
   });
 
@@ -86,7 +88,10 @@ export async function scanCourses() {
     const coursePath = path.join(rootDir, courseDir);
     const chapters = listDirectories(coursePath);
 
-    const course = await createCourse(slugify(courseDir, { lower: true, strict: true }), courseDir);
+    const course = await createCourse(
+      slugify(courseDir, { lower: true, strict: true }),
+      courseDir
+    );
 
     for (const chapterDir of chapters) {
       const { name, index } = getNameAndIndex(chapterDir);
@@ -98,8 +103,8 @@ export async function scanCourses() {
 
       for (const lessonFile of lessons) {
         const { name, index } = getNameAndIndex(lessonFile);
-        
-        if (name.endsWith('.mp4')) {
+
+        if (name.endsWith(".mp4")) {
           console.log(`Scanning lesson: ${name}`);
           const lesson = await createLesson(chapter.id, name, index);
         }
