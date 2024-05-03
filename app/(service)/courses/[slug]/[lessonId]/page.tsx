@@ -12,6 +12,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getLesson } from "@/actions/lessons-actions";
 import LessonItem from "@/components/ui/LessonItem";
+import ReactPlayer from "react-player";
+import VideoComponent from "@/components/VideoComponent";
 
 export default async function CoursesPage({
   params: { slug, lessonId },
@@ -41,33 +43,16 @@ export default async function CoursesPage({
             ratio={16 / 9}
             className="bg-muted rounded-lg bg-gray-600 overflow-hidden"
           >
-            <video className="w-full" controls preload="none" autoPlay>
-              <source
-                src={
-                  "/courses/" +
-                  course.name +
-                  "/" +
-                  lessonData.chapter.name +
-                  "/" +
-                  lessonData.name
-                }
-                type="video/mp4"
-              />
-              <track
-                src={
-                  "/courses/" +
-                  course.name +
-                  "/" +
-                  lessonData.chapter.name +
-                  "/" +
-                  lessonData.name
-                }
-                kind="subtitles"
-                srcLang="en"
-                label="English"
-              />
-              Your browser does not support the video tag.
-            </video>
+            <VideoComponent
+              src={
+                "/courses/" +
+                course.name +
+                "/" +
+                lessonData.chapter.name +
+                "/" +
+                lessonData.name
+              }
+            />
           </AspectRatio>
           <h1 className="text-3xl font-semibold">{lessonData.name}</h1>
           <div className="space-y-2">
@@ -99,6 +84,7 @@ export default async function CoursesPage({
                         lessonId={lesson.id}
                         name={lesson.name}
                         completed={lesson.completed}
+                        isCurrent={lesson.id === lessonData.id}
                       />
                     ))}
                   </AccordionContent>
