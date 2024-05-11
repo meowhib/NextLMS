@@ -95,10 +95,28 @@ export async function scanCourses() {
   const courseDirs = listDirectories(rootDir);
   console.log("🔍 Scanning courses...");
 
+  if (courseDirs.length === 0) {
+    console.log("❌ No courses found.");
+    return;
+  }
+
+  const courses = await prisma.course.findMany({});
+
   for (const courseDir of courseDirs) {
+    if (courses.find((c) => c.title === courseDir)) {
+      console.log(`❌ Course "${courseDir}" already exists.`);
+      continue;
+    }
+
     console.log(`🗃️ Scanning course: ${courseDir}`);
     const coursePath = path.join(rootDir, courseDir);
     const chapters = listDirectories(coursePath);
+
+    if (chapters.length === 0) {
+      console.log(`❌ No chapters found in course "${courseDir}".`);
+      continue;
+    }
+
     const course = await createCourse(
       slugify(courseDir, { lower: true, strict: true }),
       courseDir
