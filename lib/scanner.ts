@@ -103,7 +103,11 @@ export async function scanCourses() {
   const courses = await prisma.course.findMany({});
 
   for (const courseDir of courseDirs) {
-    if (courses.find((c) => c.title === courseDir)) {
+    if (
+      courses.find(
+        (c) => c.slug === slugify(courseDir, { lower: true, strict: true })
+      )
+    ) {
       console.log(`❌ Course "${courseDir}" already exists.`);
       continue;
     }

@@ -137,17 +137,17 @@ export default async function DashboardPage() {
                 <CardHeader className="relative">
                   <CardTitle className="font-bold line-clamp-1 flex flex-row items-center justify-between space-y-0 pb-2">
                     {course.title}
-                    <Button
+                    {/* <Button
                       variant="secondary"
                       size="icon"
                       className="absolute right-0 top-0 m-4 group-hover:flex hidden"
                     >
                       <GripVertical className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    </Button> */}
                   </CardTitle>
-                  <CardDescription className="line-clamp-2">
+                  {/* <CardDescription className="line-clamp-2">
                     Course description here
-                  </CardDescription>
+                  </CardDescription> */}
                 </CardHeader>
                 <CardContent>
                   <Progress value={50} className="h-2">
