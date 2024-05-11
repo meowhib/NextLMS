@@ -54,6 +54,7 @@ async function createLesson(
 }
 
 async function linkSubtitleToLesson(lessonId: string, subtitlePath: string) {
+  console.log("🔗 Linking subtitle to lesson:", lessonId, subtitlePath);
   return prisma.subtitle.create({
     data: {
       lessonId,
@@ -63,6 +64,7 @@ async function linkSubtitleToLesson(lessonId: string, subtitlePath: string) {
 }
 
 async function linkMaterialToLesson(lessonId: string, materialPath: string) {
+  console.log("🔗 Linking material to lesson:", lessonId, materialPath);
   return prisma.material.create({
     data: {
       lessonId,
@@ -74,14 +76,19 @@ async function linkMaterialToLesson(lessonId: string, materialPath: string) {
 const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".flv"];
 const subtitleExtensions = [".srt", ".vtt"];
 const materialExtensions = [
-  ".html",
   ".pdf",
+  ".html",
   ".doc",
   ".docx",
   ".xls",
   ".xlsx",
   ".ppt",
   ".pptx",
+  ".txt",
+  ".zip",
+  ".rar",
+  ".7z",
+  ".url",
 ];
 
 export async function scanCourses() {
@@ -108,37 +115,63 @@ export async function scanCourses() {
       const chapter = await createChapter(course.id, name, index);
       chapterCount++;
 
+      if (files.length === 0) {
+        console.log(`❌ No files found in chapter "${name}".`);
+      }
+
       for (const file of files) {
-        const { name, index } = getNameAndIndex(file);
+        const { name: lessonName, index: lessonIndex } = getNameAndIndex(file);
         const extension = path.extname(file).toLowerCase();
         if (videoExtensions.includes(extension)) {
-          console.log(`📽️ Scanning lesson: ${name}`);
+          console.log(`📽️ Scanning lesson: ${lessonName}`);
           const lesson = await createLesson(
             chapter.id,
-            name,
-            index,
+            lessonName,
+            lessonIndex,
             path.join(courseDir, chapterDir, file)
           );
           lessonCount++;
 
-          const subtitleFiles = files.filter(
-            (f) =>
-              path.basename(f, path.extname(f)) ===
-                path.basename(file, path.extname(file)) &&
+          const subtitleFiles = files.filter((f) => {
+            const baseName = path.basename(f, path.extname(f));
+            const lessonBaseName = path.basename(file, path.extname(file));
+            return (
+              baseName.includes(lessonBaseName) &&
               subtitleExtensions.includes(path.extname(f).toLowerCase())
-          );
-          const materialFiles = files.filter(
-            (f) =>
-              path.basename(f, path.extname(f)) ===
-                path.basename(file, path.extname(file)) &&
-              materialExtensions.includes(path.extname(f).toLowerCase())
+            );
+          });
+
+          console.log(
+            `${subtitleFiles.length} subtitle files found for "${name}".`
           );
 
           for (const subtitleFile of subtitleFiles) {
-            await linkSubtitleToLesson(lesson.id, subtitleFile);
+            const subtitlePath = path.join(courseDir, chapterDir, subtitleFile);
+            await linkSubtitleToLesson(lesson.id, subtitlePath);
           }
+
+          const materialFiles = files.filter((f) => {
+            const { index: materialIndex } = getNameAndIndex(f);
+            const materialExtensions = [".pdf", ".docx", ".txt"]; // Add your material extensions here
+            return (
+              materialIndex === lessonIndex &&
+              materialExtensions.includes(path.extname(f).toLowerCase())
+            );
+          });
+
+          console.log(
+            `${materialFiles.length} material files found for "${lessonName}".`
+          );
+
           for (const materialFile of materialFiles) {
-            await linkMaterialToLesson(lesson.id, materialFile);
+            const materialPath = path.join(courseDir, chapterDir, materialFile);
+            try {
+              await linkMaterialToLesson(lesson.id, materialPath);
+            } catch (error) {
+              console.error(
+                `Error linking material file ${materialPath} to lesson ${lesson.id}: ${error}`
+              );
+            }
           }
         }
       }

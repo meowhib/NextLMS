@@ -43,7 +43,11 @@ export default async function CoursesPage({
             ratio={16 / 9}
             className="bg-muted rounded-lg bg-gray-600 overflow-hidden"
           >
-            <VideoComponent src={"/courses/" + lessonData.videoPath} />
+            <VideoComponent
+              src={"/courses/" + lessonData.videoPath}
+              progress={lessonData.userProgressSeconds}
+              lessonId={lessonData.id.toString()}
+            />
           </AspectRatio>
           <h1 className="text-3xl font-semibold">{lessonData.title}</h1>
           <div className="space-y-2">

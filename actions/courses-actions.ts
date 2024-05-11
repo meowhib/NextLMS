@@ -2,9 +2,12 @@
 
 import prisma from "@/lib/prisma";
 import { scanCourses } from "@/lib/scanner";
+import { redirect } from "next/navigation";
 
 export async function startCoursesScan() {
   await scanCourses();
+
+  redirect("/");
 }
 
 export async function getCourses() {

@@ -39,13 +39,13 @@ model Lesson {
 model Subtitle {
   id       String @id @default(cuid())
   lessonId String
-  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   path     String
 }
 
 model Material {
   id       String @id @default(cuid())
   lessonId String
-  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   path     String
 }
