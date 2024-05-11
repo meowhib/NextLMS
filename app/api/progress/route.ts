@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
-  const { lessonId, userProgressSeconds, completed } = await request.json();
+  const { courseSlug, lessonId, userProgressSeconds, completed } =
+    await request.json();
+
+  console.log(
+    "📚 Progress update:",
+    courseSlug,
+    lessonId,
+    userProgressSeconds,
+    completed
+  );
 
   try {
     const lessonProgress = await prisma.lesson.update({
@@ -12,6 +21,15 @@ export async function POST(request: NextRequest) {
       data: {
         userProgressSeconds,
         completed,
+      },
+    });
+
+    const latestLesson = await prisma.course.update({
+      where: {
+        slug: courseSlug,
+      },
+      data: {
+        latestLessonId: lessonId,
       },
     });
 

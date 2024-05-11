@@ -47,6 +47,7 @@ export default async function CoursesPage({
               src={"/courses/" + lessonData.videoPath}
               progress={lessonData.userProgressSeconds}
               lessonId={lessonData.id.toString()}
+              courseSlug={slug}
             />
           </AspectRatio>
           <h1 className="text-3xl font-semibold">{lessonData.title}</h1>

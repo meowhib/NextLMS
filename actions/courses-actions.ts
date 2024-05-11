@@ -11,7 +11,18 @@ export async function startCoursesScan() {
 }
 
 export async function getCourses() {
-  const courses = await prisma.course.findMany({});
+  const courses = await prisma.course.findMany({
+    include: {
+      chapters: {
+        include: {
+          lessons: true,
+        },
+        orderBy: {
+          index: "asc",
+        },
+      },
+    },
+  });
 
   return courses;
 }

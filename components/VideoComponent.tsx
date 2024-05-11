@@ -11,10 +11,12 @@ export default function VideoComponent({
   src,
   progress,
   lessonId,
+  courseSlug,
 }: {
   src: string;
   progress: number;
   lessonId: string;
+  courseSlug: string;
 }) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isReady, setIsReady] = useState(false);
@@ -36,6 +38,7 @@ export default function VideoComponent({
   }, [isReady, progress]);
 
   async function updateProgress(
+    courseSlug: string,
     lessonId: string,
     progress: number,
     completed: boolean
@@ -46,6 +49,7 @@ export default function VideoComponent({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        courseSlug,
         lessonId,
         userProgressSeconds: progress,
         completed,
@@ -77,9 +81,14 @@ export default function VideoComponent({
       progressInterval={5000}
       onProgress={async (progress: any) => {
         if (duration && duration - progress.playedSeconds < 10) {
-          await updateProgress(lessonId, duration, true);
+          await updateProgress(courseSlug, lessonId, duration, true);
         } else {
-          await updateProgress(lessonId, progress.playedSeconds, false);
+          await updateProgress(
+            courseSlug,
+            lessonId,
+            progress.playedSeconds,
+            false
+          );
         }
       }}
       controls

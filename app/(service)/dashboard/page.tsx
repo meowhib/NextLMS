@@ -95,7 +95,11 @@ export default async function DashboardPage() {
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
           {courses.map((course, index) => (
             <Link
-              href={"/courses/" + course.slug}
+              href={`/courses/${course.slug}/${
+                course.latestLessonId
+                  ? course.latestLessonId
+                  : course.chapters[0]?.lessons[0]?.id
+              }`}
               key={course.slug}
               passHref={true}
             >
