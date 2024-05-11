@@ -28,9 +28,6 @@ export async function getCourse(slug: string) {
         },
       },
     },
-    orderBy: {
-      index: "asc",
-    },
   });
 
   return course;

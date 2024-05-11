@@ -8,29 +8,44 @@ datasource db {
 }
 
 model Course {
-  id            Int         @id @default(autoincrement())
-  slug          String      @unique
-  name          String
-  index         Int
-  chapters      Chapter[]
+  id       String   @id @default(cuid())
+  slug     String   @unique
+  title    String
+  chapters Chapter[]
 }
 
 model Chapter {
-  id        Int      @id @default(autoincrement())
-  name      String
-  courseId  Int
+  id        String   @id @default(cuid())
+  courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   index     Int
+  title     String
   lessons   Lesson[]
 }
 
 model Lesson {
-  id             Int             @id @default(autoincrement())
-  name           String
-  chapterId      Int
-  index          Int
-  length         Int             
-  chapter        Chapter         @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  progress       Int             @default(0)
-  completed      Boolean         @default(false)
+  id                 String     @id @default(cuid())
+  chapterId          String
+  chapter            Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  index              Int
+  title              String
+  videoPath          String
+  subtitles          Subtitle[]
+  materials          Material[]
+  userProgressSeconds Int        @default(0)
+  completed          Boolean    @default(false)
+}
+
+model Subtitle {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  path     String
+}
+
+model Material {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  path     String
 }

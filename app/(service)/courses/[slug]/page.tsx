@@ -19,8 +19,8 @@ export default async function CoursesPage({
   };
 }) {
   // const videoURL = "https://dlsu5svezbvdk.cloudfront.net/4+-+Important+Message.mp4";
-  const course = await getCourse (slug);
-  
+  const course = await getCourse(slug);
+
   if (!course) {
     redirect("/dashboard");
   }
@@ -35,7 +35,7 @@ export default async function CoursesPage({
           >
             {/* <VideoComponent src={"https://www.youtube.com/watch?v=Hoe5Lp2yT5A"} /> */}
           </AspectRatio>
-          <h1 className="text-3xl font-semibold">{course.name}</h1>
+          <h1 className="text-3xl font-semibold">{course.title}</h1>
           <div className="space-y-2">
             <h1 className="text-xl font-semibold">Notes:</h1>
             <Textarea className="w-full" />
@@ -47,16 +47,23 @@ export default async function CoursesPage({
               {course.chapters.map((chapter) => (
                 <AccordionItem value={chapter.id.toString()} key={chapter.id}>
                   <AccordionTrigger className="px-4">
-                    <h1 className="text-lg font-semibold no-underline">{chapter.name}</h1>
+                    <h1 className="text-lg font-semibold no-underline">
+                      {chapter.title}
+                    </h1>
                   </AccordionTrigger>
                   <AccordionContent>
-                      {chapter.lessons.map((lesson) => (
-                        <Link href={`/courses/${slug}/${lesson.id}`} key={lesson.id}>
-                          <div className="p-4 hover:bg-gray-200 rounded-lg text-left transition-all cursor-pointer">
-                            <p>{lesson.index} - {lesson.name}</p>
-                          </div>
-                        </Link>
-                      ))}
+                    {chapter.lessons.map((lesson) => (
+                      <Link
+                        href={`/courses/${slug}/${lesson.id}`}
+                        key={lesson.id}
+                      >
+                        <div className="p-4 hover:bg-gray-200 rounded-lg text-left transition-all cursor-pointer">
+                          <p>
+                            {lesson.index} - {lesson.title}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
                   </AccordionContent>
                 </AccordionItem>
               ))}

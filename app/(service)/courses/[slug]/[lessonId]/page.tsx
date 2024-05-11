@@ -43,18 +43,9 @@ export default async function CoursesPage({
             ratio={16 / 9}
             className="bg-muted rounded-lg bg-gray-600 overflow-hidden"
           >
-            <VideoComponent
-              src={
-                "/courses/" +
-                course.name +
-                "/" +
-                lessonData.chapter.name +
-                "/" +
-                lessonData.name
-              }
-            />
+            <VideoComponent src={"/courses/" + lessonData.videoPath} />
           </AspectRatio>
-          <h1 className="text-3xl font-semibold">{lessonData.name}</h1>
+          <h1 className="text-3xl font-semibold">{lessonData.title}</h1>
           <div className="space-y-2">
             <h1 className="text-xl font-semibold">Notes:</h1>
             <Textarea className="w-full" />
@@ -65,7 +56,7 @@ export default async function CoursesPage({
             <Accordion
               type="single"
               collapsible
-              defaultValue={lessonData.chapter.id.toString()}
+              defaultValue={lessonData.chapterId.toString()}
             >
               {course.chapters.map((chapter) => (
                 <AccordionItem key={chapter.id} value={chapter.id.toString()}>
@@ -73,14 +64,15 @@ export default async function CoursesPage({
                     className="p-6"
                     value={chapter.id.toString()}
                   >
-                    <h1 className="text-lg font-semibold">{chapter.name}</h1>
+                    <h1 className="text-lg font-semibold">{chapter.title}</h1>
                   </AccordionTrigger>
                   <AccordionContent>
                     {chapter.lessons.map((lesson) => (
                       <LessonItem
+                        key={lesson.id}
                         courseSlug={slug}
-                        lessonId={lesson.id}
-                        name={lesson.name}
+                        lessonId={lesson.id as unknown as number}
+                        name={lesson.title}
                         completed={lesson.completed}
                         isCurrent={lesson.id === lessonData.id}
                       />
