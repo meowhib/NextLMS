@@ -61,10 +61,12 @@ export default async function CoursesPage({
               {course.chapters.map((chapter) => (
                 <AccordionItem key={chapter.id} value={chapter.id.toString()}>
                   <AccordionTrigger
-                    className="p-6"
+                    className="p-4 text-left cursor-pointer hover:bg-gray-100 transition-colors duration-200 ease-in-out"
                     value={chapter.id.toString()}
                   >
-                    <h1 className="text-lg font-semibold">{chapter.title}</h1>
+                    <h1 className="text-lg font-semibold line-clamp-1 ">
+                      {chapter.title}
+                    </h1>
                   </AccordionTrigger>
                   <AccordionContent>
                     {chapter.lessons.map((lesson) => (
