@@ -1,19 +1,10 @@
 import Link from "next/link";
 import {
-  Activity,
-  CircleUser,
-  CreditCard,
-  DollarSign,
-  Menu,
-  Package2,
-  Search,
-  Users,
   PlusIcon,
   Hourglass,
   ListChecks,
   Presentation,
   GraduationCap,
-  GripHorizontal,
   GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +21,43 @@ import { getCourses } from "@/actions/courses-actions";
 
 export default async function DashboardPage() {
   const courses = await getCourses();
+  const numberOfCourses = courses.length;
+  const numberOfLessons = courses.reduce(
+    (acc, course) =>
+      acc +
+      course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
+    0
+  );
+  const numberOfCompletedLessons = courses.reduce(
+    (acc, course) =>
+      acc +
+      course.chapters.reduce(
+        (acc, chapter) =>
+          acc +
+          chapter.lessons.reduce(
+            (acc, lesson) => (lesson.completed ? acc + 1 : acc),
+            0
+          ),
+        0
+      ),
+    0
+  );
+  // numberOfMinutesLearned by summing up the duration of all completed lessons
+  const numberOfSecondsLearned = courses.reduce(
+    (acc, course) =>
+      acc +
+      course.chapters.reduce(
+        (acc, chapter) =>
+          acc +
+          chapter.lessons.reduce(
+            (acc, lesson) =>
+              lesson.completed ? acc + lesson.userProgressSeconds : acc,
+            0
+          ),
+        0
+      ),
+    0
+  );
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -42,10 +70,12 @@ export default async function DashboardPage() {
             <Hourglass className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1789</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">
+              {numberOfSecondsLearned / 60}
+            </div>
+            {/* <p className="text-xs text-muted-foreground">
               +20.1% from last month
-            </p>
+            </p> */}
           </CardContent>
         </Card>
         <Card>
@@ -56,10 +86,10 @@ export default async function DashboardPage() {
             <ListChecks className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">48</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">{numberOfCompletedLessons}</div>
+            {/* <p className="text-xs text-muted-foreground">
               +54.1% from last month
-            </p>
+            </p> */}
           </CardContent>
         </Card>
         <Card>
@@ -68,7 +98,7 @@ export default async function DashboardPage() {
             <Presentation className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">258</div>
+            <div className="text-2xl font-bold">{numberOfLessons}</div>
             {/* <p className="text-xs text-muted-foreground">
               +19% from last month
             </p> */}
@@ -80,7 +110,7 @@ export default async function DashboardPage() {
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{numberOfCourses}</div>
             {/* <p className="text-xs text-muted-foreground">
               +201 since last hour
             </p> */}
@@ -115,22 +145,11 @@ export default async function DashboardPage() {
                       <GripVertical className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </CardTitle>
-                  {/* {course.description && (
-                    <CardDescription className="line-clamp-2">
-                      {course.description}
-                    </CardDescription>
-                  )} */}
                   <CardDescription className="line-clamp-2">
                     Course description here
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* <Progress value={course.progress} className="h-2">
-                    <div className="mb-1 flex w-full justify-between">
-                      <Label className="text-sm">Progress</Label>
-                      <span className="text-sm">60%</span>
-                    </div>
-                  </Progress> */}
                   <Progress value={50} className="h-2">
                     <div className="mb-1 flex w-full justify-between">
                       <Label className="text-sm">Progress</Label>

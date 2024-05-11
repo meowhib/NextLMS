@@ -56,3 +56,25 @@ export async function deleteCourse(slug: string) {
 
   return course;
 }
+
+export async function countCourses() {
+  const count = await prisma.course.count();
+
+  return count;
+}
+
+export async function countLessons() {
+  const count = await prisma.lesson.count();
+
+  return count;
+}
+
+export async function countCompletedLessons() {
+  const count = await prisma.lesson.count({
+    where: {
+      completed: true,
+    },
+  });
+
+  return count;
+}
