@@ -7,11 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  progress  UserLessonProgress[]
+}
+
 model Course {
-  id       String   @id @default(cuid())
-  slug     String   @unique
-  title    String
-  chapters Chapter[]
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  chapters       Chapter[]
   latestLessonId String?
 }
 
@@ -25,28 +33,37 @@ model Chapter {
 }
 
 model Lesson {
-  id                 String     @id @default(cuid())
-  chapterId          String
-  chapter            Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  index              Int
-  title              String
-  videoPath          String
-  subtitles          Subtitle[]
-  materials          Material[]
-  userProgressSeconds Int        @default(0)
-  completed          Boolean    @default(false)
+  id                String   @id @default(cuid())
+  chapterId         String
+  chapter           Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  index             Int
+  title             String
+  videoPath         String
+  subtitles         Subtitle[]
+  materials         Material[]
+  progress          UserLessonProgress[]
+}
+
+model UserLessonProgress {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId           String
+  lesson             Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  progressSeconds    Int      @default(0)
+  completed          Boolean  @default(false)
 }
 
 model Subtitle {
-  id       String @id @default(cuid())
-  lessonId String
-  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  path     String
+  id        String   @id @default(cuid())
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  path      String
 }
 
 model Material {
-  id       String @id @default(cuid())
-  lessonId String
-  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  path     String
+  id        String   @id @default(cuid())
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  path      String
 }
