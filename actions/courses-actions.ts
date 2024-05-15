@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { scanCourses } from "@/lib/scanner";
+import { scanCourses } from "@/lib/localCoursesScanner";
 import { redirect } from "next/navigation";
 
 export async function startCoursesScan() {
@@ -21,6 +21,7 @@ export async function getCourses() {
           index: "asc",
         },
       },
+      enrollments: true,
     },
   });
 
@@ -41,6 +42,7 @@ export async function getCourse(slug: string) {
           index: "asc",
         },
       },
+      enrollments: true,
     },
   });
 
@@ -70,7 +72,7 @@ export async function countLessons() {
 }
 
 export async function countCompletedLessons() {
-  const count = await prisma.lesson.count({
+  const count = await prisma.userLessonProgress.count({
     where: {
       completed: true,
     },

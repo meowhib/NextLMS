@@ -8,20 +8,22 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  email     String   @unique
+  id        String            @id @default(cuid())
+  username  String            @unique
+  email     String            @unique
   password  String
   progress  UserLessonProgress[]
   comments  Comment[]
+  enrollments Enrollment[]
 }
 
 model Course {
-  id             String   @id @default(cuid())
-  slug           String   @unique
-  title          String
-  chapters       Chapter[]
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  title         String
+  chapters      Chapter[]
   latestLessonId String?
+  enrollments   Enrollment[]
 }
 
 model Chapter {
@@ -34,47 +36,47 @@ model Chapter {
 }
 
 model Lesson {
-  id                String   @id @default(cuid())
-  chapterId         String
-  chapter           Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  index             Int
-  title             String
-  videoPath         String
-  subtitles         Subtitle[]
-  materials         Material[]
-  attachments       Attachment[]
-  comments          Comment[]
-  progress          UserLessonProgress[]
+  id          String               @id @default(cuid())
+  chapterId   String
+  chapter     Chapter              @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  index       Int
+  title       String
+  videoPath   String
+  subtitles   Subtitle[]
+  materials   Material[]
+  attachments Attachment[]
+  comments    Comment[]
+  progress    UserLessonProgress[]
 }
 
 model UserLessonProgress {
-  id                 String   @id @default(cuid())
-  userId             String
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonId           String
-  lesson             Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  progressSeconds    Int      @default(0)
-  completed          Boolean  @default(false)
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId       String
+  lesson         Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  progressSeconds Int      @default(0)
+  completed      Boolean  @default(false)
 }
 
 model Subtitle {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   path      String
 }
 
 model Material {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   path      String
 }
 
 model Attachment {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   path      String
   type      String
 }
@@ -87,4 +89,13 @@ model Comment {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String
   createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt DateTime @default(now())
 }

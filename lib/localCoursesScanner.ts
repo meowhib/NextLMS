@@ -1,95 +1,23 @@
-import * as fs from "fs";
 import * as path from "path";
 import prisma from "./prisma";
 var slugify = require("slugify");
+import {
+  videoExtensions,
+  subtitleExtensions,
+  materialExtensions,
+} from "./constants";
+import {
+  listDirectories,
+  listFiles,
+  getNameAndIndex,
+  createCourse,
+  createChapter,
+  createLesson,
+  linkSubtitleToLesson,
+  linkMaterialToLesson,
+} from "@/lib/scanners";
 
 const rootDir = "public/courses";
-
-function getNameAndIndex(input: string) {
-  const regex = /^(\d+)[\s\-\.\_]*(.+?)(?=\.\w+$|$)/;
-  const match = input.match(regex);
-
-  if (match) {
-    const index = parseInt(match[1], 10);
-    const name = match[2].trim();
-    return { name, index };
-  }
-
-  return { name: input, index: 0 };
-}
-
-async function createCourse(slug: string, title: string) {
-  return prisma.course.create({
-    data: {
-      slug,
-      title,
-    },
-  });
-}
-
-async function createChapter(courseId: string, title: string, index: number) {
-  return prisma.chapter.create({
-    data: {
-      courseId,
-      title,
-      index,
-    },
-  });
-}
-
-async function createLesson(
-  chapterId: string,
-  title: string,
-  index: number,
-  videoPath: string
-) {
-  return prisma.lesson.create({
-    data: {
-      chapterId,
-      title,
-      index,
-      videoPath,
-    },
-  });
-}
-
-async function linkSubtitleToLesson(lessonId: string, subtitlePath: string) {
-  console.log("🔗 Linking subtitle to lesson:", lessonId, subtitlePath);
-  return prisma.subtitle.create({
-    data: {
-      lessonId,
-      path: subtitlePath,
-    },
-  });
-}
-
-async function linkMaterialToLesson(lessonId: string, materialPath: string) {
-  console.log("🔗 Linking material to lesson:", lessonId, materialPath);
-  return prisma.material.create({
-    data: {
-      lessonId,
-      path: materialPath,
-    },
-  });
-}
-
-const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".flv"];
-const subtitleExtensions = [".srt", ".vtt"];
-const materialExtensions = [
-  ".pdf",
-  ".html",
-  ".doc",
-  ".docx",
-  ".xls",
-  ".xlsx",
-  ".ppt",
-  ".pptx",
-  ".txt",
-  ".zip",
-  ".rar",
-  ".7z",
-  ".url",
-];
 
 export async function scanCourses() {
   const courseDirs = listDirectories(rootDir);
@@ -105,7 +33,7 @@ export async function scanCourses() {
   for (const courseDir of courseDirs) {
     if (
       courses.find(
-        (c) => c.slug === slugify(courseDir, { lower: true, strict: true })
+        (c: any) => c.slug === slugify(courseDir, { lower: true, strict: true })
       )
     ) {
       console.log(`❌ Course "${courseDir}" already exists.`);
@@ -154,7 +82,7 @@ export async function scanCourses() {
           );
           lessonCount++;
 
-          const subtitleFiles = files.filter((f) => {
+          const subtitleFiles = files.filter((f: string) => {
             const baseName = path.basename(f, path.extname(f));
             const lessonBaseName = path.basename(file, path.extname(file));
             return (
@@ -172,9 +100,8 @@ export async function scanCourses() {
             await linkSubtitleToLesson(lesson.id, subtitlePath);
           }
 
-          const materialFiles = files.filter((f) => {
+          const materialFiles = files.filter((f: string) => {
             const { index: materialIndex } = getNameAndIndex(f);
-            const materialExtensions = [".pdf", ".docx", ".txt"]; // Add your material extensions here
             return (
               materialIndex === lessonIndex &&
               materialExtensions.includes(path.extname(f).toLowerCase())
@@ -203,16 +130,4 @@ export async function scanCourses() {
       `✅ Course "${courseDir}" scanned successfully with ${chapterCount} chapters and ${lessonCount} lessons.`
     );
   }
-}
-
-function listDirectories(dir: string) {
-  return fs
-    .readdirSync(dir)
-    .filter((entry) => fs.statSync(path.join(dir, entry)).isDirectory());
-}
-
-function listFiles(dir: string) {
-  return fs
-    .readdirSync(dir)
-    .filter((entry) => fs.statSync(path.join(dir, entry)).isFile());
 }

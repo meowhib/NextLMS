@@ -19,45 +19,51 @@ import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { getCourses } from "@/actions/courses-actions";
 
+import { Course, Chapter, Lesson } from "@/types";
+
 export default async function DashboardPage() {
   const courses = await getCourses();
   const numberOfCourses = courses.length;
-  const numberOfLessons = courses.reduce(
-    (acc, course) =>
-      acc +
-      course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
-    0
-  );
-  const numberOfCompletedLessons = courses.reduce(
-    (acc, course) =>
-      acc +
-      course.chapters.reduce(
-        (acc, chapter) =>
-          acc +
-          chapter.lessons.reduce(
-            (acc, lesson) => (lesson.completed ? acc + 1 : acc),
-            0
-          ),
-        0
-      ),
-    0
-  );
-  // numberOfMinutesLearned by summing up the duration of all completed lessons
-  const numberOfSecondsLearned = courses.reduce(
-    (acc, course) =>
-      acc +
-      course.chapters.reduce(
-        (acc, chapter) =>
-          acc +
-          chapter.lessons.reduce(
-            (acc, lesson) =>
-              lesson.completed ? acc + lesson.userProgressSeconds : acc,
-            0
-          ),
-        0
-      ),
-    0
-  );
+  const numberOfLessons = 10;
+  const numberOfCompletedLessons = 5;
+  const numberOfSecondsLearned = 3000;
+
+  // const numberOfLessons = courses.reduce(
+  //   (acc: number, course: Course) =>
+  //     acc +
+  //     course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
+  //   0
+  // );
+  // const numberOfCompletedLessons = courses.reduce(
+  //   (acc: number, course: Course) =>
+  //     acc +
+  //     course.chapters.reduce(
+  //       (acc: number, chapter) =>
+  //         acc +
+  //         chapter.lessons.reduce(
+  //           (acc: number, lesson) => (lesson.completed ? acc + 1 : acc),
+  //           0
+  //         ),
+  //       0
+  //     ),
+  //   0
+  // );
+  // // numberOfMinutesLearned by summing up the duration of all completed lessons
+  // const numberOfSecondsLearned = courses.reduce(
+  //   (acc: number, course: Course) =>
+  //     acc +
+  //     course.chapters.reduce(
+  //       (acc, chapter) =>
+  //         acc +
+  //         chapter.lessons.reduce(
+  //           (acc, lesson) =>
+  //             lesson.completed ? acc + lesson.userProgressSeconds : acc,
+  //           0
+  //         ),
+  //       0
+  //     ),
+  //   0
+  // );
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -123,7 +129,7 @@ export default async function DashboardPage() {
           Courses
         </h1>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-          {courses.map((course, index) => (
+          {courses.map((course) => (
             <Link
               href={`/courses/${course.slug}/${
                 course.latestLessonId
@@ -138,16 +144,16 @@ export default async function DashboardPage() {
                   <CardTitle className="font-bold line-clamp-1 flex flex-row items-center justify-between space-y-0 pb-2">
                     {course.title}
                     {/* <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute right-0 top-0 m-4 group-hover:flex hidden"
-                    >
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                    </Button> */}
+                                variant="secondary"
+                                size="icon"
+                                className="absolute right-0 top-0 m-4 group-hover:flex hidden"
+                              >
+                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                              </Button> */}
                   </CardTitle>
                   {/* <CardDescription className="line-clamp-2">
-                    Course description here
-                  </CardDescription> */}
+                              Course description here
+                            </CardDescription> */}
                 </CardHeader>
                 <CardContent>
                   <Progress value={50} className="h-2">
