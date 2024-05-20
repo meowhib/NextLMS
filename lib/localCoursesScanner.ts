@@ -19,7 +19,7 @@ import {
 
 const rootDir = "public/courses";
 
-export async function scanCourses() {
+export async function scanLocalCourses() {
   const courseDirs = listDirectories(rootDir);
   console.log("🔍 Scanning courses...");
 

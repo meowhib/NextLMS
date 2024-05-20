@@ -1,19 +1,13 @@
 import Link from "next/link";
 import {
-  Activity,
   CircleUser,
-  CreditCard,
-  DollarSign,
-  Headset,
+  LogOut,
   Menu,
   Package2,
-  ScanSearch,
   Search,
   Settings,
-  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import ScanButton from "@/components/ui/scan-button";
+import ScanButtons from "@/components/ui/scan-buttons";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
@@ -135,17 +129,16 @@ export default async function Dashboard({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Headset className="h-4 w-4 mr-2" />
-                Support
-              </DropdownMenuItem>
-              <ScanButton />
+              </DropdownMenuItem> */}
+              <ScanButtons />
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

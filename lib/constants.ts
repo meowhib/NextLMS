@@ -15,3 +15,4 @@ export const materialExtensions = [
   ".7z",
   ".url",
 ];
+export const bucketName = "courses";

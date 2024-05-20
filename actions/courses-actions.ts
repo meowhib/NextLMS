@@ -1,11 +1,18 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { scanCourses } from "@/lib/localCoursesScanner";
+import { scanLocalCourses } from "@/lib/localCoursesScanner";
+import { scanBucketCourses } from "@/lib/bucketCoursesScanner";
 import { redirect } from "next/navigation";
 
-export async function startCoursesScan() {
-  await scanCourses();
+export async function startLocalCoursesScan() {
+  await scanLocalCourses();
+
+  redirect("/");
+}
+
+export async function startBucketCoursesScan() {
+  await scanBucketCourses();
 
   redirect("/");
 }
