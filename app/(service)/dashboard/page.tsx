@@ -20,13 +20,14 @@ import { Label } from "@/components/ui/label";
 import { getCourses } from "@/actions/courses-actions";
 
 import { Course, Chapter, Lesson } from "@/types";
-import {
-  listDirectories,
-  listDirectoriesRecursive,
-  listFolders,
-  listObjects,
-} from "@/lib/bucketCoursesScanner";
+// import {
+//   listDirectories,
+//   listDirectoriesRecursive,
+//   listFolders,
+//   listObjects,
+// } from "@/lib/bucketCoursesScanner";
 import { bucketName } from "@/lib/constants";
+import Image from "next/image";
 
 export default async function DashboardPage() {
   const courses = await getCourses();
@@ -71,8 +72,6 @@ export default async function DashboardPage() {
   //     ),
   //   0
   // );
-
-  console.log(await listDirectoriesRecursive(bucketName));
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
