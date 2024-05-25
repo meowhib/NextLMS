@@ -14,13 +14,13 @@ export default function LessonItem({
   lessonId,
   courseSlug,
   name,
-  completed,
+  completed = false,
   isCurrent,
 }: {
   lessonId: number;
   courseSlug: string;
   name: string;
-  completed: boolean;
+  completed?: boolean;
   isCurrent: boolean;
 }) {
   const router = useRouter();

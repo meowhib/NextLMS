@@ -19,7 +19,7 @@ import {
 const bucketName = "courses";
 
 const minioClient = new Minio.Client({
-  endPoint: "192.168.1.5",
+  endPoint: "localhost",
   port: 9000,
   useSSL: false,
   accessKey: "YOUR_ROOT_USER",
@@ -37,19 +37,17 @@ export async function listDirectories(
   bucketName: string,
   prefix: string
 ): Promise<string[]> {
-  const stream = minioClient.listObjectsV2(bucketName, prefix, false);
-  const directories: string[] = [];
+  const stream = minioClient.listObjectsV2(bucketName, prefix, true);
+  const objects: string[] = [];
 
   for await (const obj of stream) {
-    if (obj.prefix) {
-      const parts = obj.prefix.split("/");
-      if (parts.length === 2 && parts[1] === "") {
-        directories.push(decodeURIComponent(parts[0]));
-      }
+    if (!obj.isDir) {
+      objects.push(obj.name);
     }
   }
 
-  return directories;
+  console.log(objects);
+  return objects;
 }
 
 export async function listDirectoriesRecursive(bucketName: string) {
@@ -96,69 +94,131 @@ export async function listFiles(
   return files;
 }
 
+// export async function scanBucketCourses() {
+//   console.log("🔍 Scanning courses...");
+
+//   try {
+//     const courses = await prisma.course.findMany({});
+//     const existingCourses = new Set(courses.map((c) => c.slug));
+
+//     const bucketExists = await minioClient.bucketExists(bucketName);
+//     if (!bucketExists) {
+//       console.log(`❌ Bucket "${bucketName}" does not exist.`);
+//       return;
+//     }
+
+//     const courseDirs = await listDirectories(bucketName, "");
+
+//     if (courseDirs.length === 0) {
+//       console.log("❌ No courses found.");
+//       return;
+//     }
+
+//     console.log(`📚 Found ${courseDirs.length} courses.`);
+
+//     for (const courseDir of courseDirs) {
+//       const slug = slugify(courseDir, { lower: true, strict: true });
+
+//       if (existingCourses.has(slug)) {
+//         console.log(`❌ Course "${courseDir}" already exists.`);
+//         continue;
+//       }
+
+//       console.log(`🗃️ Scanning course: ${courseDir}`);
+//       console.log("Prefix: ", `${courseDir}/`);
+//       const chapterDirs = await listDirectories(bucketName, `${courseDir}/`);
+
+//       if (chapterDirs.length === 0) {
+//         console.log(`❌ No chapters found in course "${courseDir}".`);
+//         continue;
+//       }
+
+//       const course = await createCourse(slug, courseDir);
+//       let chapterCount = 0;
+//       let lessonCount = 0;
+
+//       for (const chapterDir of chapterDirs) {
+//         const { name, index } = getNameAndIndex(chapterDir);
+//         console.log(`📗 Scanning chapter: ${name}`);
+
+//         const chapter = await createChapter(course.id, name, index);
+//         chapterCount++;
+
+//         const files = await listFiles(
+//           bucketName,
+//           `${courseDir}/${chapterDir}/`
+//         );
+
+//         if (files.length === 0) {
+//           console.log(`❌ No files found in chapter "${name}".`);
+//         } else {
+//           // ... handle files ...
+//         }
+//       }
+
+//       console.log(
+//         `✅ Course "${courseDir}" scanned successfully with ${chapterCount} chapters and ${lessonCount} lessons.`
+//       );
+//     }
+//   } catch (error) {
+//     console.error("Error scanning courses:", error);
+//   }
+// }
+
 export async function scanBucketCourses() {
   console.log("🔍 Scanning courses...");
 
-  try {
-    const courses = await prisma.course.findMany({});
-    const existingCourses = new Set(courses.map((c) => c.slug));
+  // Get all courses from the courses bucket
+  const stream = minioClient.listObjectsV2(bucketName, "", true);
+  const coursesChaptersLessons: Record<string, Record<string, string[]>> = {};
 
-    const bucketExists = await minioClient.bucketExists(bucketName);
-    if (!bucketExists) {
-      console.log(`❌ Bucket "${bucketName}" does not exist.`);
-      return;
+  for await (const obj of stream) {
+    if (!obj.name) {
+      continue;
     }
 
-    const courseDirs = await listDirectories(bucketName, "");
+    const parts = obj.name.split("/");
+    const courseSlug = parts[0];
+    const chapterSlug = parts[1];
+    const lessonName = parts[2];
 
-    if (courseDirs.length === 0) {
-      console.log("❌ No courses found.");
-      return;
+    if (!coursesChaptersLessons[courseSlug]) {
+      coursesChaptersLessons[courseSlug] = {};
     }
 
-    for (const courseDir of courseDirs) {
-      const slug = slugify(courseDir, { lower: true, strict: true });
-      if (existingCourses.has(slug)) {
-        console.log(`❌ Course "${courseDir}" already exists.`);
-        continue;
-      }
+    if (!coursesChaptersLessons[courseSlug][chapterSlug]) {
+      coursesChaptersLessons[courseSlug][chapterSlug] = [];
+    }
 
-      console.log(`🗃️ Scanning course: ${courseDir}`);
-      const chapterDirs = await listDirectories(bucketName, `${courseDir}/`);
+    coursesChaptersLessons[courseSlug][chapterSlug].push(lessonName);
+  }
 
-      if (chapterDirs.length === 0) {
-        console.log(`❌ No chapters found in course "${courseDir}".`);
-        continue;
-      }
+  console.log(coursesChaptersLessons);
 
-      const course = await createCourse(slug, courseDir);
-      let chapterCount = 0;
-      let lessonCount = 0;
+  for (const [courseSlug, chapters] of Object.entries(coursesChaptersLessons)) {
+    // Insert the course
+    const courseId = await createCourse(
+      slugify(courseSlug, { lower: true, strict: true }),
+      courseSlug
+    );
 
-      for (const chapterDir of chapterDirs) {
-        const { name, index } = getNameAndIndex(chapterDir);
-        console.log(`📗 Scanning chapter: ${name}`);
-
-        const chapter = await createChapter(course.id, name, index);
-        chapterCount++;
-
-        const files = await listFiles(
-          bucketName,
-          `${courseDir}/${chapterDir}/`
-        );
-
-        if (files.length === 0) {
-          console.log(`❌ No files found in chapter "${name}".`);
-        } else {
-          // ... handle files ...
-        }
-      }
-
-      console.log(
-        `✅ Course "${courseDir}" scanned successfully with ${chapterCount} chapters and ${lessonCount} lessons.`
+    for (const [chapterSlug, lessons] of Object.entries(chapters)) {
+      // Insert the chapter
+      const chapterId = await createChapter(
+        courseId.id,
+        chapterSlug,
+        getNameAndIndex(chapterSlug).index
       );
+
+      for (const lessonName of lessons) {
+        // Insert the lesson
+        await createLesson(
+          chapterId.id,
+          lessonName,
+          getNameAndIndex(lessonName).index,
+          courseId.title + "/" + chapterSlug + "/" + lessonName
+        );
+      }
     }
-  } catch (error) {
-    console.error("Error scanning courses:", error);
   }
 }

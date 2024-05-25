@@ -9,12 +9,12 @@ import ReactPlayer from "react-player";
 
 export default function VideoComponent({
   src,
-  progress,
+  progress = 0,
   lessonId,
   courseSlug,
 }: {
   src: string;
-  progress: number;
+  progress?: number;
   lessonId: string;
   courseSlug: string;
 }) {

@@ -149,7 +149,7 @@ export default async function DashboardPage() {
             >
               <Card className="group">
                 <CardHeader className="relative">
-                  <CardTitle className="font-bold line-clamp-1 flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="font-bold line-clamp-2 flex flex-row items-center justify-between space-y-0 pb-2">
                     {course.title}
                     {/* <Button
                                 variant="secondary"

@@ -22,6 +22,8 @@ import ScanButtons from "@/components/ui/scan-buttons";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
+import { signOut } from "next-auth/react";
+import LogoutButton from "@/components/ui/logout-button";
 
 export default async function Dashboard({
   children,
@@ -135,10 +137,7 @@ export default async function Dashboard({
               </DropdownMenuItem> */}
               <ScanButtons />
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
+              <LogoutButton />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

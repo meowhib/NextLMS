@@ -14,6 +14,8 @@ import { getLesson } from "@/actions/lessons-actions";
 import LessonItem from "@/components/ui/LessonItem";
 import ReactPlayer from "react-player";
 import VideoComponent from "@/components/VideoComponent";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function CoursesPage({
   params: { slug, lessonId },
@@ -23,6 +25,17 @@ export default async function CoursesPage({
     lessonId: string;
   };
 }) {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // @ts-ignore
+  const userId = session.user;
+
+  console.log(userId);
+
   const course = await getCourse(slug);
 
   if (!course) {
@@ -44,8 +57,7 @@ export default async function CoursesPage({
             className="bg-muted rounded-lg bg-gray-600 overflow-hidden"
           >
             <VideoComponent
-              src={"/courses/" + lessonData.videoPath}
-              progress={lessonData.userProgressSeconds}
+              src={"http://localhost:9000" + "/courses/" + lessonData.videoPath}
               lessonId={lessonData.id.toString()}
               courseSlug={slug}
             />
@@ -80,7 +92,6 @@ export default async function CoursesPage({
                         courseSlug={slug}
                         lessonId={lesson.id as unknown as number}
                         name={lesson.title}
-                        completed={lesson.completed}
                         isCurrent={lesson.id === lessonData.id}
                       />
                     ))}
