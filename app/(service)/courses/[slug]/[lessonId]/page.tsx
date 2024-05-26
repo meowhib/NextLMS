@@ -14,6 +14,8 @@ import { getLesson } from "@/actions/lessons-actions";
 import LessonItem from "@/components/ui/LessonItem";
 import ReactPlayer from "react-player";
 import VideoComponent from "@/components/VideoComponent";
+import CommentSection from "@/components/CommentSection";
+import CommentForm from "@/components/CommentForm";
 
 export default async function CoursesPage({
   params: { slug, lessonId },
@@ -45,16 +47,18 @@ export default async function CoursesPage({
           >
             <VideoComponent
               src={"/courses/" + lessonData.videoPath}
-              progress={lessonData.userProgressSeconds}
+              // progress={lessonData.userProgressSeconds}
+              progress={0}
               lessonId={lessonData.id.toString()}
               courseSlug={slug}
             />
           </AspectRatio>
           <h1 className="text-3xl font-semibold">{lessonData.title}</h1>
           <div className="space-y-2">
-            <h1 className="text-xl font-semibold">Notes:</h1>
-            <Textarea className="w-full" />
+            <h1 className="text-xl font-semibold">Comment:</h1>
+            <CommentForm />
           </div>
+          <CommentSection />
         </div>
         <div className="p-2 col-span-6 md:col-span-2 bg-gray-100 rounded-lg max-h-lvh relative w-full">
           <ScrollArea className="flex-1 bg-white rounded-lg h-full fixed w-full">
@@ -80,7 +84,8 @@ export default async function CoursesPage({
                         courseSlug={slug}
                         lessonId={lesson.id as unknown as number}
                         name={lesson.title}
-                        completed={lesson.completed}
+                        // completed={lesson.completed}
+                        completed={false}
                         isCurrent={lesson.id === lessonData.id}
                       />
                     ))}

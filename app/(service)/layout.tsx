@@ -30,9 +30,9 @@ export default async function Dashboard({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
-    redirect("/signin");
-  }
+  // if (!session) {
+  //   redirect("/signin");
+  // }
 
   return (
     <div className="flex min-h-screen w-full flex-col">

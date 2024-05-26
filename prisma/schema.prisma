@@ -16,7 +16,7 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
-   progress  UserLessonProgress[]
+  progress  UserLessonProgress[]
   comments  Comment[]
   enrollments Enrollment[]
 
