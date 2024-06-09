@@ -1,43 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function POST(request: NextRequest) {
-  const { courseSlug, lessonId, userProgressSeconds, completed } =
-    await request.json();
-
-  console.log(
-    "📚 Progress update:",
-    courseSlug,
-    lessonId,
-    userProgressSeconds,
-    completed
-  );
-
   try {
-    const lessonProgress = await prisma.lesson.update({
-      where: {
-        id: lessonId,
-      },
-      data: {
-        userProgressSeconds,
-        completed,
-      },
-    });
+    const { courseSlug, lessonId, userProgressSeconds, completed } =
+      await request.json();
 
-    const latestLesson = await prisma.course.update({
-      where: {
-        slug: courseSlug,
-      },
-      data: {
-        latestLessonId: lessonId,
-      },
-    });
+    const session = await auth();
 
-    return NextResponse.json(lessonProgress, { status: 200 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { message: "Progress update failed! Unauthorized." },
+        { status: 401 }
+      );
+    }
+
+    // const userLessonProgress = await prisma.userLessonProgress.upsert({
+    //   where: {
+    //     userEmail: session?.user?.email,
+    //     lessonId,
+    //   },
+    //   update: {
+    //     progressSeconds: userProgressSeconds,
+    //   },
+    //   create: {
+    //     userEmail: session?.user.email,
+    //     lessonId,
+    //     progressSeconds: userProgressSeconds,
+    //     completed: false,
+    //   },
+    // });
+
+    console.log(
+      "📚 Progress update:",
+      courseSlug,
+      lessonId,
+      userProgressSeconds,
+      completed
+    );
+
+    return NextResponse.json({ message: "Progress updated!" }, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return NextResponse.json(
-      { message: "Progress update failed!" },
+      { message: "Progress update failed! Internal error." },
       { status: 500 }
     );
   }

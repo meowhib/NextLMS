@@ -19,18 +19,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ScanButtons from "@/components/ui/scan-buttons";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { signOut } from "next-auth/react";
 import LogoutButton from "@/components/ui/logout-button";
+import { auth } from "@/auth";
 
 export default async function Dashboard({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session) {
     redirect("/signin");

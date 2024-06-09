@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-model User {
+ model User {
   id            String          @id @default(cuid())
   name          String?
   email         String          @unique
@@ -16,14 +16,15 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
-  progress  UserLessonProgress[]
-  comments  Comment[]
-  enrollments Enrollment[]
-
+ 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
 
+  enrollments   Enrollment[]
+  progress      UserLessonProgress[]
+  comments      Comment[]
+}
+ 
 model Account {
   userId            String
   type              String
@@ -36,31 +37,47 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
+ 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+ 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+ 
   @@id([provider, providerAccountId])
 }
-
+ 
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+ 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
+ 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
-
+ 
   @@id([identifier, token])
+}
+ 
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([userId, credentialID])
 }
 
 model Course {
@@ -71,22 +88,6 @@ model Course {
   latestLessonId String?
   enrollments   Enrollment[]
 }
-
-model Authenticator {
-  credentialID         String  @unique
-  userId               String
-  providerAccountId    String
-  credentialPublicKey  String
-  counter              Int
-  credentialDeviceType String
-  credentialBackedUp   Boolean
-  transports           String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, credentialID])
-}
-
 model Chapter {
   id        String   @id @default(cuid())
   courseId  String
@@ -147,7 +148,7 @@ model Comment {
   lessonId  String
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String
   createdAt DateTime @default(now())
 }

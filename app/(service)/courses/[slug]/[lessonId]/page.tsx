@@ -14,8 +14,7 @@ import { getLesson } from "@/actions/lessons-actions";
 import LessonItem from "@/components/ui/LessonItem";
 import ReactPlayer from "react-player";
 import VideoComponent from "@/components/VideoComponent";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/auth";
 
 export default async function CoursesPage({
   params: { slug, lessonId },
@@ -25,7 +24,7 @@ export default async function CoursesPage({
     lessonId: string;
   };
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session) {
     redirect("/login");
