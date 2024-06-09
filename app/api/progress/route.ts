@@ -9,28 +9,32 @@ export async function POST(request: NextRequest) {
 
     const session = await auth();
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { message: "Progress update failed! Unauthorized." },
         { status: 401 }
       );
     }
 
-    // const userLessonProgress = await prisma.userLessonProgress.upsert({
-    //   where: {
-    //     userEmail: session?.user?.email,
-    //     lessonId,
-    //   },
-    //   update: {
-    //     progressSeconds: userProgressSeconds,
-    //   },
-    //   create: {
-    //     userEmail: session?.user.email,
-    //     lessonId,
-    //     progressSeconds: userProgressSeconds,
-    //     completed: false,
-    //   },
-    // });
+    const userLessonProgress = await prisma.userLessonProgress.upsert({
+      where: {
+        userId_lessonId: {
+          userId: session?.user?.id,
+          lessonId: lessonId,
+        },
+      },
+      update: {
+        progressSeconds: userProgressSeconds,
+      },
+      create: {
+        userId: session?.user?.id,
+        lessonId: lessonId,
+        progressSeconds: userProgressSeconds,
+        completed: false,
+      },
+    });
+
+    console.log("📚 User lesson progress:", userLessonProgress);
 
     console.log(
       "📚 Progress update:",
