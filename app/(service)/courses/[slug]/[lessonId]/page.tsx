@@ -85,15 +85,17 @@ export default async function CoursesPage({
                     </h1>
                   </AccordionTrigger>
                   <AccordionContent>
-                    {chapter.lessons.map((lesson) => (
-                      <LessonItem
-                        key={lesson.id}
-                        courseSlug={slug}
-                        lessonId={lesson.id as unknown as number}
-                        name={lesson.title}
-                        isCurrent={lesson.id === lessonData.id}
-                      />
-                    ))}
+                    {chapter.lessons
+                      .sort((a, b) => a.index - b.index)
+                      .map((lesson) => (
+                        <LessonItem
+                          key={lesson.id}
+                          courseSlug={slug}
+                          lessonId={lesson.id as unknown as number}
+                          name={lesson.title}
+                          isCurrent={lesson.id === lessonData.id}
+                        />
+                      ))}
                   </AccordionContent>
                 </AccordionItem>
               ))}
