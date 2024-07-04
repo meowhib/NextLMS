@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       },
       update: {
         progressSeconds: userProgressSeconds,
+        completed: completed,
       },
       create: {
         userId: session?.user?.id,

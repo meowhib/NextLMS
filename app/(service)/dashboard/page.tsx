@@ -17,7 +17,10 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
-import { getCourses } from "@/actions/courses-actions";
+import {
+  getCourses,
+  getUserCoursesWithCompletedLessons,
+} from "@/actions/courses-actions";
 
 import { Course, Chapter, Lesson } from "@/types";
 // import {
@@ -28,50 +31,31 @@ import { Course, Chapter, Lesson } from "@/types";
 // } from "@/lib/bucketCoursesScanner";
 import { bucketName } from "@/lib/constants";
 import Image from "next/image";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const user = session.user;
+
+  if (!user || !user.id) {
+    redirect("/login");
+  }
+
   const courses = await getCourses();
   const numberOfCourses = courses.length;
+  // const numberOfLessons = courses.reduce(
+  //   (acc, course) => acc + course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
+  //   0
+  // );
   const numberOfLessons = 10;
   const numberOfCompletedLessons = 5;
-  const numberOfSecondsLearned = 3000;
-
-  // const numberOfLessons = courses.reduce(
-  //   (acc: number, course: Course) =>
-  //     acc +
-  //     course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
-  //   0
-  // );
-  // const numberOfCompletedLessons = courses.reduce(
-  //   (acc: number, course: Course) =>
-  //     acc +
-  //     course.chapters.reduce(
-  //       (acc: number, chapter) =>
-  //         acc +
-  //         chapter.lessons.reduce(
-  //           (acc: number, lesson) => (lesson.completed ? acc + 1 : acc),
-  //           0
-  //         ),
-  //       0
-  //     ),
-  //   0
-  // );
-  // // numberOfMinutesLearned by summing up the duration of all completed lessons
-  // const numberOfSecondsLearned = courses.reduce(
-  //   (acc: number, course: Course) =>
-  //     acc +
-  //     course.chapters.reduce(
-  //       (acc, chapter) =>
-  //         acc +
-  //         chapter.lessons.reduce(
-  //           (acc, lesson) =>
-  //             lesson.completed ? acc + lesson.userProgressSeconds : acc,
-  //           0
-  //         ),
-  //       0
-  //     ),
-  //   0
-  // );
+  const numberOfSecondsLearned = 300;
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
