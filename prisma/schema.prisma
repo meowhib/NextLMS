@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
- model User {
+model User {
   id            String          @id @default(cuid())
   name          String?
   email         String          @unique
@@ -16,7 +16,7 @@ datasource db {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -24,7 +24,7 @@ datasource db {
   progress      UserLessonProgress[]
   comments      Comment[]
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -155,10 +155,11 @@ model Comment {
 }
 
 model Enrollment {
-  id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   enrolledAt DateTime @default(now())
+
+  @@id([userId, courseId])
 }

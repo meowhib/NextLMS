@@ -33,8 +33,6 @@ export default async function CoursesPage({
   // @ts-ignore
   const userId = session.user;
 
-  console.log(userId);
-
   const course = await getCourse(slug);
 
   if (!course) {

@@ -87,3 +87,28 @@ export async function countCompletedLessons() {
 
   return count;
 }
+
+export async function getEnrolledCourses(userId: string) {
+  const courses = await prisma.course.findMany({
+    where: {
+      enrollments: {
+        some: {
+          userId,
+        },
+      },
+    },
+    include: {
+      chapters: {
+        include: {
+          lessons: true,
+        },
+        orderBy: {
+          index: "asc",
+        },
+      },
+      enrollments: true,
+    },
+  });
+
+  return courses;
+}
