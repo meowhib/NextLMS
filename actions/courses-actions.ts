@@ -35,6 +35,59 @@ export async function getCourses() {
   return courses;
 }
 
+export async function getUserCoursesWithCompletedLessons(userId: string) {
+  const courses = await prisma.course.findMany({
+    where: {
+      enrollments: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      chapters: {
+        select: {
+          lessons: {
+            select: {
+              id: true,
+              title: true,
+              progress: {
+                where: {
+                  userId: userId,
+                  completed: true,
+                },
+                select: {
+                  completed: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const result = courses.map((course) => {
+    const completedLessons = course.chapters.reduce((acc, chapter) => {
+      const completedInChapter = chapter.lessons.filter(
+        (lesson) => lesson.progress.length > 0
+      ).length;
+      return acc + completedInChapter;
+    }, 0);
+
+    return {
+      courseId: course.id,
+      courseTitle: course.title,
+      completedLessons: completedLessons,
+    };
+  });
+
+  return result;
+}
+
 export async function getCourse(slug: string) {
   const course = await prisma.course.findFirst({
     where: {

@@ -84,8 +84,8 @@ model Course {
   id            String       @id @default(cuid())
   slug          String       @unique
   title         String
+  description   String?
   chapters      Chapter[]
-  latestLessonId String?
   enrollments   Enrollment[]
 }
 model Chapter {

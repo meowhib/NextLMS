@@ -18,7 +18,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { getEnrolledCourses } from "@/actions/courses-actions";
-
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -31,6 +30,10 @@ export default async function DashboardPage() {
 
   const courses = await getEnrolledCourses(session?.user.id);
   const numberOfCourses = courses.length;
+  // const numberOfLessons = courses.reduce(
+  //   (acc, course) => acc + course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
+  //   0
+  // );
   const numberOfLessons = 10;
   const numberOfCompletedLessons = 5;
   const numberOfSecondsLearned = 3000;
