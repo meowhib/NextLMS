@@ -67,22 +67,7 @@ export default async function Analytics(){
           </CardContent>
         </Card>
         </div>
-        {/* <div className="space-y-4">
-            <Card>
-        <h1 className="text-3xl font-bold leading-none tracking-tight">
-          Courses
-        </h1>
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-        {
-                 courses.map((course: Course) => {
-                     return (
-                         <h1 key={course.id}>{course.title}</h1>
-                   )
-                 })
-            }
-          </div>
-          </Card>
-          </div> */}
+        
           <div>
           <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

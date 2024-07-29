@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { getCourse } from "@/actions/courses-actions";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { CommentForm } from "../../../../components/comments/Form";
+
 
 export default async function CoursesPage({
   params: { slug },
@@ -20,6 +22,7 @@ export default async function CoursesPage({
 }) {
   // const videoURL = "https://dlsu5svezbvdk.cloudfront.net/4+-+Important+Message.mp4";
   const course = await getCourse(slug);
+  
 
   if (!course) {
     redirect("/dashboard");
@@ -41,7 +44,7 @@ export default async function CoursesPage({
             <Textarea className="w-full" />
           </div>
         </div>
-        <div className="p-2 col-span-2 bg-gray-100 rounded-lg max-h-lvh relative">
+        {/* <div className="p-2 col-span-2 bg-gray-100 rounded-lg max-h-lvh relative">
           <ScrollArea className="flex-1 bg-white rounded-lg h-full fixed">
             <Accordion type="single" collapsible>
               {course.chapters.map((chapter) => (
@@ -69,8 +72,13 @@ export default async function CoursesPage({
               ))}
             </Accordion>
           </ScrollArea>
-        </div>
+        </div> */}
       </div>
+      <div>
+        
+        <CommentForm/>
+      </div>
+      
     </main>
   );
 }

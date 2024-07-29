@@ -35,7 +35,7 @@ export default async function CmntSection({ id }: Cmnt) {
       {comments.map((cmnt) => (
         <div
           key={cmnt.id}
-          className=" p-4 border border-gray-300 rounded-lg bg-gray-500"
+          className=" p-4 border border-gray-300 rounded-lg bg-gray-300"
         >
           <div className="flex items-center space-x-4 mb-2">
             <Image
@@ -47,8 +47,8 @@ export default async function CmntSection({ id }: Cmnt) {
             />
             <h1 className="font-semibold text-medium">{cmnt.user.id}</h1>
           </div>
-          <div className="inline-block border border-gray-300 bg-gray-400 p-2 rounded ml-2">
-            <p className="text-gray-900 ">{cmnt.content}</p>
+          <div className="inline-block border border-gray-300 bg-gray-900 p-2 rounded ml-2">
+            <p className="text-white ">{cmnt.content}</p>
           </div>
         </div>
       ))}

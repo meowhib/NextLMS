@@ -16,6 +16,8 @@ import ReactPlayer from "react-player";
 import VideoComponent from "@/components/VideoComponent";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { CommentForm } from "@/components/comments/Form";
+import CmntSection from "@/components/comments/cmntSection";
 
 export default async function CoursesPage({
   params: { slug, lessonId },
@@ -101,6 +103,10 @@ export default async function CoursesPage({
             </Accordion>
           </ScrollArea>
         </div>
+      </div>
+      <CommentForm/>
+      <div>
+      <CmntSection/>
       </div>
     </main>
   );
