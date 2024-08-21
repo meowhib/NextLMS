@@ -94,177 +94,122 @@ export async function listFiles(
   return files;
 }
 
-// export async function scanBucketCourses() {
-//   console.log("🔍 Scanning courses...");
-
-//   try {
-//     const courses = await prisma.course.findMany({});
-//     const existingCourses = new Set(courses.map((c) => c.slug));
-
-//     const bucketExists = await minioClient.bucketExists(bucketName);
-//     if (!bucketExists) {
-//       console.log(`❌ Bucket "${bucketName}" does not exist.`);
-//       return;
-//     }
-
-//     const courseDirs = await listDirectories(bucketName, "");
-
-//     if (courseDirs.length === 0) {
-//       console.log("❌ No courses found.");
-//       return;
-//     }
-
-//     console.log(`📚 Found ${courseDirs.length} courses.`);
-
-//     for (const courseDir of courseDirs) {
-//       const slug = slugify(courseDir, { lower: true, strict: true });
-
-//       if (existingCourses.has(slug)) {
-//         console.log(`❌ Course "${courseDir}" already exists.`);
-//         continue;
-//       }
-
-//       console.log(`🗃️ Scanning course: ${courseDir}`);
-//       console.log("Prefix: ", `${courseDir}/`);
-//       const chapterDirs = await listDirectories(bucketName, `${courseDir}/`);
-
-//       if (chapterDirs.length === 0) {
-//         console.log(`❌ No chapters found in course "${courseDir}".`);
-//         continue;
-//       }
-
-//       const course = await createCourse(slug, courseDir);
-//       let chapterCount = 0;
-//       let lessonCount = 0;
-
-//       for (const chapterDir of chapterDirs) {
-//         const { name, index } = getNameAndIndex(chapterDir);
-//         console.log(`📗 Scanning chapter: ${name}`);
-
-//         const chapter = await createChapter(course.id, name, index);
-//         chapterCount++;
-
-//         const files = await listFiles(
-//           bucketName,
-//           `${courseDir}/${chapterDir}/`
-//         );
-
-//         if (files.length === 0) {
-//           console.log(`❌ No files found in chapter "${name}".`);
-//         } else {
-//           // ... handle files ...
-//         }
-//       }
-
-//       console.log(
-//         `✅ Course "${courseDir}" scanned successfully with ${chapterCount} chapters and ${lessonCount} lessons.`
-//       );
-//     }
-//   } catch (error) {
-//     console.error("Error scanning courses:", error);
-//   }
-// }
-
 export async function scanBucketCourses() {
   console.log("🔍 Scanning courses...");
 
-  // Get all courses from the courses bucket
-  const stream = minioClient.listObjectsV2(bucketName, "", true);
-  const coursesChaptersLessons: Record<
-    string,
-    Record<
+  try {
+    const courses = await prisma.course.findMany({});
+    const existingCourses = new Set(courses.map((c) => c.slug));
+
+    const bucketExists = await minioClient.bucketExists(bucketName);
+    if (!bucketExists) {
+      console.log(`❌ Bucket "${bucketName}" does not exist.`);
+      return;
+    }
+
+    const stream = minioClient.listObjectsV2(bucketName, "", true);
+    const coursesChaptersLessons: Record<
       string,
-      { videos: string[]; materials: string[]; subtitles: string[] }
-    >
-  > = {};
+      Record<
+        string,
+        { videos: string[]; materials: string[]; subtitles: string[] }
+      >
+    > = {};
 
-  for await (const obj of stream) {
-    if (!obj.name) {
-      continue;
-    }
+    for await (const obj of stream) {
+      if (!obj.name) {
+        continue;
+      }
 
-    const parts = obj.name.split("/");
-    const courseSlug = parts[0];
-    const chapterSlug = parts[1];
-    const lessonName = parts[2];
-    const isSubtitle = lessonName.endsWith(".srt");
-    const isMaterial = !lessonName.endsWith(".mp4") && !isSubtitle;
+      const parts = obj.name.split("/");
+      const courseSlug = parts[0];
+      const chapterSlug = parts[1];
+      const lessonName = parts[2];
 
-    if (!coursesChaptersLessons[courseSlug]) {
-      coursesChaptersLessons[courseSlug] = {};
-    }
+      if (!coursesChaptersLessons[courseSlug]) {
+        coursesChaptersLessons[courseSlug] = {};
+      }
 
-    if (!coursesChaptersLessons[courseSlug][chapterSlug]) {
-      coursesChaptersLessons[courseSlug][chapterSlug] = {
-        videos: [],
-        materials: [],
-        subtitles: [],
-      };
-    }
+      if (!coursesChaptersLessons[courseSlug][chapterSlug]) {
+        coursesChaptersLessons[courseSlug][chapterSlug] = {
+          videos: [],
+          materials: [],
+          subtitles: [],
+        };
+      }
 
-    if (isSubtitle) {
-      coursesChaptersLessons[courseSlug][chapterSlug].subtitles.push(
-        lessonName
-      );
-    } else if (isMaterial) {
-      coursesChaptersLessons[courseSlug][chapterSlug].materials.push(
-        lessonName
-      );
-    } else {
-      coursesChaptersLessons[courseSlug][chapterSlug].videos.push(lessonName);
-    }
-  }
-
-  console.log(coursesChaptersLessons);
-
-  for (const [courseSlug, chapters] of Object.entries(coursesChaptersLessons)) {
-    // Insert the course
-    const courseId = await createCourse(
-      slugify(courseSlug, { lower: true, strict: true }),
-      courseSlug
-    );
-
-    for (const [chapterSlug, lessonContents] of Object.entries(chapters)) {
-      // Insert the chapter
-      const chapterId = await createChapter(
-        courseId.id,
-        chapterSlug,
-        getNameAndIndex(chapterSlug).index
-      );
-
-      const allLessons = mergeByIndex(lessonContents);
-
-      for (const lesson of allLessons) {
-        // Insert the lesson
-        await createLesson(
-          chapterId.id,
-          lesson.name,
-          lesson.index,
-          courseId.title + "/" + chapterSlug + "/" + lesson.path
+      const extension = path.extname(lessonName).toLowerCase();
+      if (videoExtensions.includes(extension)) {
+        coursesChaptersLessons[courseSlug][chapterSlug].videos.push(lessonName);
+      } else if (subtitleExtensions.includes(extension)) {
+        coursesChaptersLessons[courseSlug][chapterSlug].subtitles.push(
+          lessonName
+        );
+      } else if (materialExtensions.includes(extension)) {
+        coursesChaptersLessons[courseSlug][chapterSlug].materials.push(
+          lessonName
         );
       }
+    }
 
-      for (const lesson of allLessons) {
-        const lessonId = await prisma.lesson.findFirst({
-          where: {
-            chapterId: chapterId.id,
-            index: lesson.index,
-          },
-        });
+    for (const [courseSlug, chapters] of Object.entries(
+      coursesChaptersLessons
+    )) {
+      if (existingCourses.has(courseSlug)) {
+        console.log(`❌ Course "${courseSlug}" already exists.`);
+        continue;
+      }
 
-        if (!lessonId) {
-          continue;
-        }
+      const course = await createCourse(courseSlug, courseSlug);
+      let chapterCount = 0;
+      let lessonCount = 0;
 
-        for (const material of lesson.materials) {
-          const materialId = await linkMaterialToLesson(lessonId.id, material);
-        }
+      for (const [chapterSlug, lessonContents] of Object.entries(chapters)) {
+        const { name: chapterName, index: chapterIndex } =
+          getNameAndIndex(chapterSlug);
+        const chapter = await createChapter(
+          course.id,
+          chapterName,
+          chapterIndex
+        );
+        chapterCount++;
 
-        for (const subtitle of lesson.subtitles) {
-          const subtitleId = await linkSubtitleToLesson(lessonId.id, subtitle);
+        const allLessons = mergeByIndex(lessonContents);
+
+        for (const lesson of allLessons) {
+          const { name: lessonName, index: lessonIndex } = getNameAndIndex(
+            lesson.path
+          );
+          const lessonData = await createLesson(
+            chapter.id,
+            lessonName,
+            lessonIndex,
+            `${courseSlug}/${chapterSlug}/${lesson.path}`
+          );
+          lessonCount++;
+
+          for (const subtitle of lesson.subtitles) {
+            await linkSubtitleToLesson(
+              lessonData.id,
+              `${courseSlug}/${chapterSlug}/${subtitle}`
+            );
+          }
+
+          for (const material of lesson.materials) {
+            await linkMaterialToLesson(
+              lessonData.id,
+              `${courseSlug}/${chapterSlug}/${material}`
+            );
+          }
         }
       }
+
+      console.log(
+        `✅ Course "${courseSlug}" scanned successfully with ${chapterCount} chapters and ${lessonCount} lessons.`
+      );
     }
+  } catch (error) {
+    console.error("Error scanning courses:", error);
   }
 }
 
@@ -288,14 +233,14 @@ function mergeByIndex(contents: {
 
   lessons.forEach((lesson) => {
     contents.materials.forEach((material) => {
-      const { name, index } = getNameAndIndex(material);
+      const { index } = getNameAndIndex(material);
       if (index === lesson.index) {
         lesson.materials.push(material);
       }
     });
 
     contents.subtitles.forEach((subtitle) => {
-      const { name, index } = getNameAndIndex(subtitle);
+      const { index } = getNameAndIndex(subtitle);
       if (index === lesson.index) {
         lesson.subtitles.push(subtitle);
       }
