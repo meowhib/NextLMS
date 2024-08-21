@@ -5,21 +5,16 @@ import {
   ListChecks,
   Presentation,
   GraduationCap,
-  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
-import { getEnrolledCourses } from "@/actions/courses-actions";
+import { getEnrolledCourses, getCourses } from "@/actions/courses-actions";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { enrollInCourse } from "@/actions/enrollment-actions";
+import { EnrollButton } from "@/components/EnrollButton";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -28,15 +23,41 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const courses = await getEnrolledCourses(session?.user.id);
-  const numberOfCourses = courses.length;
-  // const numberOfLessons = courses.reduce(
-  //   (acc, course) => acc + course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
-  //   0
-  // );
-  const numberOfLessons = 10;
-  const numberOfCompletedLessons = 5;
-  const numberOfSecondsLearned = 3000;
+  const enrolledCourses = await getEnrolledCourses(session.user.id);
+  const availableCourses = await getCourses();
+
+  const numberOfCourses = enrolledCourses.length;
+  const numberOfLessons = enrolledCourses.reduce(
+    (acc, course) =>
+      acc +
+      course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
+    0
+  );
+  const numberOfCompletedLessons = enrolledCourses.reduce(
+    (acc, course) =>
+      acc +
+      course.chapters.reduce(
+        (acc, chapter) =>
+          acc + chapter.lessons.filter((lesson) => lesson.completed).length,
+        0
+      ),
+    0
+  );
+  const numberOfSecondsLearned = enrolledCourses.reduce(
+    (acc, course) =>
+      acc +
+      course.chapters.reduce(
+        (chapterAcc, chapter) =>
+          chapterAcc +
+          chapter.lessons.reduce(
+            (lessonAcc, lesson) =>
+              lessonAcc + (lesson.progress[0]?.progressSeconds || 0),
+            0
+          ),
+        0
+      ),
+    0
+  );
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -52,9 +73,6 @@ export default async function DashboardPage() {
             <div className="text-2xl font-bold">
               {numberOfSecondsLearned / 60}
             </div>
-            {/* <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p> */}
           </CardContent>
         </Card>
         <Card>
@@ -66,9 +84,6 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{numberOfCompletedLessons}</div>
-            {/* <p className="text-xs text-muted-foreground">
-              +54.1% from last month
-            </p> */}
           </CardContent>
         </Card>
         <Card>
@@ -78,9 +93,6 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{numberOfLessons}</div>
-            {/* <p className="text-xs text-muted-foreground">
-              +19% from last month
-            </p> */}
           </CardContent>
         </Card>
         <Card>
@@ -90,25 +102,18 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{numberOfCourses}</div>
-            {/* <p className="text-xs text-muted-foreground">
-              +201 since last hour
-            </p> */}
           </CardContent>
         </Card>
       </div>
 
       <div className="space-y-4">
         <h1 className="text-3xl font-bold leading-none tracking-tight">
-          Courses
+          Enrolled Courses
         </h1>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-          {courses.map((course) => (
+          {enrolledCourses.map((course) => (
             <Link
-              href={`/courses/${course.slug}/${
-                course.latestLessonId
-                  ? course.latestLessonId
-                  : course.chapters[0]?.lessons[0]?.id
-              }`}
+              href={`/courses/${course.slug}/${course.chapters[0]?.lessons[0]?.id}`}
               key={course.slug}
               passHref={true}
             >
@@ -116,17 +121,7 @@ export default async function DashboardPage() {
                 <CardHeader className="relative">
                   <CardTitle className="font-bold line-clamp-2 flex flex-row items-center justify-between space-y-0 pb-2">
                     {course.title}
-                    {/* <Button
-                                variant="secondary"
-                                size="icon"
-                                className="absolute right-0 top-0 m-4 group-hover:flex hidden"
-                              >
-                                <GripVertical className="h-4 w-4 text-muted-foreground" />
-                              </Button> */}
                   </CardTitle>
-                  {/* <CardDescription className="line-clamp-2">
-                              Course description here
-                            </CardDescription> */}
                 </CardHeader>
                 <CardContent>
                   <Progress value={50} className="h-2">
@@ -139,28 +134,27 @@ export default async function DashboardPage() {
               </Card>
             </Link>
           ))}
-          <div className="w-full h-full bg-gray-300 hover:bg-gray-400 hover:transition-all duration-150 rounded-lg relative">
-            <div className="absolute w-full h-full flex justify-center items-center">
-              <Button className="bg-gray-0 hover:bg-gray-0 text-gray-900 h-full w-full font-semibold">
-                <PlusIcon className="h-4 h-w mr-2" />
-                Add new course
-              </Button>
-            </div>
-            <Card className="invisible">
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold leading-none tracking-tight">
+          Available Courses
+        </h1>
+        <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
+          {availableCourses.map((course) => (
+            <Card key={course.slug} className="group">
               <CardHeader>
-                <CardTitle className="font-bold">Hidden</CardTitle>
-                <CardDescription>Hidden</CardDescription>
+                <CardTitle className="font-bold line-clamp-2">
+                  {course.title}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <Progress value={0} className="h-2">
-                  <div className="mb-1 flex w-full justify-between">
-                    <Label className="text-sm">Progress</Label>
-                    <span className="text-sm">60%</span>
-                  </div>
-                </Progress>
+                <p className="line-clamp-2 mb-4">{course.description}</p>
+                <EnrollButton courseId={course.id} />
               </CardContent>
             </Card>
-          </div>
+          ))}
         </div>
       </div>
     </main>

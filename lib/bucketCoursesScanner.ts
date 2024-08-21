@@ -22,8 +22,8 @@ const minioClient = new Minio.Client({
   endPoint: "localhost",
   port: 9000,
   useSSL: false,
-  accessKey: "YOUR_ROOT_USER",
-  secretKey: "YOUR_ROOT_PASSWORD",
+  accessKey: "meowhib",
+  secretKey: "hahamadafakasyss",
 });
 
 export async function listObjects(bucketName: string, prefix: string) {

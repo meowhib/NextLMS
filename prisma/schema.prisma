@@ -109,6 +109,7 @@ model Lesson {
   attachments Attachment[]
   comments    Comment[]
   progress    UserLessonProgress[]
+  completed   Boolean              @default(false)
 }
 
 model UserLessonProgress {

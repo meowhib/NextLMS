@@ -28,7 +28,6 @@ export async function getCourses() {
           index: "asc",
         },
       },
-      enrollments: true,
     },
   });
 
@@ -153,7 +152,11 @@ export async function getEnrolledCourses(userId: string) {
     include: {
       chapters: {
         include: {
-          lessons: true,
+          lessons: {
+            include: {
+              progress: true,
+            },
+          },
         },
         orderBy: {
           index: "asc",
