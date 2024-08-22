@@ -27,6 +27,11 @@ export default async function DashboardPage() {
   const enrolledCourses = await getEnrolledCourses(session.user.id);
   const availableCourses = await getCourses();
 
+  // Filter out enrolled courses from available courses
+  const unenrolledCourses = availableCourses.filter(
+    (course) => !enrolledCourses.some((enrolled) => enrolled.id === course.id)
+  );
+
   const numberOfCourses = enrolledCourses.length;
   const numberOfLessons = enrolledCourses.reduce(
     (acc, course) =>
@@ -145,28 +150,30 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold leading-none tracking-tight">
-          Available Courses
-        </h1>
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-          {availableCourses.map((course) => (
-            <Link href={`/course/${course.slug}`} key={course.slug}>
-              <Card className="group">
-                <CardHeader>
-                  <CardTitle className="font-bold line-clamp-2">
-                    {course.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="line-clamp-2 mb-4">{course.description}</p>
-                  <EnrollButton courseId={course.id} />
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+      {unenrolledCourses.length > 0 && (
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold leading-none tracking-tight">
+            Available Courses
+          </h1>
+          <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
+            {unenrolledCourses.map((course) => (
+              <Link href={`/course/${course.slug}`} key={course.slug}>
+                <Card className="group">
+                  <CardHeader>
+                    <CardTitle className="font-bold line-clamp-2">
+                      {course.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="line-clamp-2 mb-4">{course.description}</p>
+                    <EnrollButton courseId={course.id} />
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }
