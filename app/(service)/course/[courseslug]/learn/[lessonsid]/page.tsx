@@ -21,6 +21,8 @@ interface LessonPageProps {
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
+  const MINIO_STORAGE_URL = process.env.MINIO_STORAGE_URL;
+
   const session = await auth();
 
   if (!session || !session.user || !session.user.id) {
@@ -46,7 +48,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
       <div className="w-full lg:w-2/3 mb-8 lg:mb-0">
         <div className="aspect-w-16 aspect-h-9 mb-6">
           <VideoComponent
-            src={`http://localhost:9000/courses/${lesson.videoPath}`}
+            src={`${MINIO_STORAGE_URL}/courses/${lesson.videoPath}`}
             lessonId={lesson.id}
             courseSlug={course.slug}
           />
