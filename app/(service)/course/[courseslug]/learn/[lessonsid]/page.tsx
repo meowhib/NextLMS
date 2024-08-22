@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import LessonCard from "@/components/LessonCard";
 
 interface LessonPageProps {
   params: {
@@ -78,16 +79,15 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       <ul className="space-y-2">
                         {chapter.lessons.map((chapterLesson) => (
                           <li key={chapterLesson.id}>
-                            <Link
-                              href={`/course/${course.slug}/learn/${chapterLesson.id}`}
-                              className={`block p-2 rounded transition-colors ${
-                                chapterLesson.id === lesson.id
-                                  ? "bg-primary text-primary-foreground"
-                                  : "hover:bg-secondary"
-                              }`}
-                            >
-                              {chapterLesson.title}
-                            </Link>
+                            <LessonCard
+                              lessonId={chapterLesson.id}
+                              courseSlug={course.slug}
+                              title={chapterLesson.title}
+                              isCompleted={
+                                chapterLesson.progress[0]?.completed || false
+                              }
+                              isCurrentLesson={chapterLesson.id === lesson.id}
+                            />
                           </li>
                         ))}
                       </ul>
