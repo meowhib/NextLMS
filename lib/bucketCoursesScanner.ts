@@ -160,7 +160,12 @@ export async function scanBucketCourses() {
         continue;
       }
 
-      const course = await createCourse(courseSlug, courseSlug);
+      const courseTitle = courseSlug.replace(/-/g, " ");
+      const slugifiedCourseSlug = slugify(courseTitle, {
+        lower: true,
+        strict: true,
+      });
+      const course = await createCourse(slugifiedCourseSlug, courseTitle);
       let chapterCount = 0;
       let lessonCount = 0;
 

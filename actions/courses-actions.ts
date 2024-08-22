@@ -87,7 +87,7 @@ export async function getUserCoursesWithCompletedLessons(userId: string) {
   return result;
 }
 
-export async function getCourse(slug: string) {
+export async function getCourse(slug: string, userId: string) {
   const course = await prisma.course.findFirst({
     where: {
       slug,
@@ -95,7 +95,20 @@ export async function getCourse(slug: string) {
     include: {
       chapters: {
         include: {
-          lessons: true,
+          lessons: {
+            include: {
+              progress: {
+                where: {
+                  userId: userId,
+                },
+                orderBy: {
+                  updatedAt: "desc",
+                },
+                take: 1,
+              },
+              attachments: true,
+            },
+          },
         },
         orderBy: {
           index: "asc",
@@ -105,7 +118,27 @@ export async function getCourse(slug: string) {
     },
   });
 
-  return course;
+  if (!course) return null;
+
+  // Find the last studied lesson
+  let lastStudiedLesson = null;
+  for (const chapter of course.chapters) {
+    for (const lesson of chapter.lessons) {
+      if (lesson.progress.length > 0) {
+        if (
+          !lastStudiedLesson ||
+          lesson.progress[0].updatedAt > lastStudiedLesson.progress[0].updatedAt
+        ) {
+          lastStudiedLesson = lesson;
+        }
+      }
+    }
+  }
+
+  return {
+    ...course,
+    lastStudiedLessonId: lastStudiedLesson ? lastStudiedLesson.id : null,
+  };
 }
 
 export async function deleteCourse(slug: string) {
@@ -154,7 +187,16 @@ export async function getEnrolledCourses(userId: string) {
         include: {
           lessons: {
             include: {
-              progress: true,
+              progress: {
+                where: {
+                  userId: userId,
+                },
+                orderBy: {
+                  updatedAt: "desc",
+                },
+                take: 1,
+              },
+              attachments: true,
             },
           },
         },
@@ -166,5 +208,27 @@ export async function getEnrolledCourses(userId: string) {
     },
   });
 
-  return courses;
+  const result = courses.map((course) => {
+    let lastStudiedLessonId = null;
+    let lastUpdatedAt = new Date(0); // Initialize with the earliest possible date
+
+    for (const chapter of course.chapters) {
+      for (const lesson of chapter.lessons) {
+        if (
+          lesson.progress.length > 0 &&
+          lesson.progress[0].updatedAt > lastUpdatedAt
+        ) {
+          lastStudiedLessonId = lesson.id;
+          lastUpdatedAt = lesson.progress[0].updatedAt;
+        }
+      }
+    }
+
+    return {
+      ...course,
+      lastStudiedLessonId,
+    };
+  });
+
+  return result;
 }

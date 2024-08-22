@@ -14,3 +14,28 @@ export async function getLesson(lessonId: string) {
 
   return lesson;
 }
+
+export async function getLastVisitedLesson(courseId: string, userId: string) {
+  const lastProgress = await prisma.userLessonProgress.findFirst({
+    where: {
+      userId: userId,
+      lesson: {
+        chapter: {
+          courseId: courseId,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+    include: {
+      lesson: {
+        include: {
+          chapter: true,
+        },
+      },
+    },
+  });
+
+  return lastProgress?.lesson;
+}

@@ -15,6 +15,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { enrollInCourse } from "@/actions/enrollment-actions";
 import { EnrollButton } from "@/components/EnrollButton";
+import { getLastVisitedLesson } from "@/actions/lessons-actions";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -59,6 +60,10 @@ export default async function DashboardPage() {
     0
   );
 
+  const numberOfEnrolledCourses = enrolledCourses.length;
+  const numberOfUnenrolledCourses =
+    availableCourses.length - numberOfEnrolledCourses;
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
@@ -71,7 +76,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {numberOfSecondsLearned / 60}
+              {Math.floor(numberOfSecondsLearned / 60)}
             </div>
           </CardContent>
         </Card>
@@ -97,11 +102,15 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total courses</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Courses to explore
+            </CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{numberOfCourses}</div>
+            <div className="text-2xl font-bold">
+              {numberOfUnenrolledCourses}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -111,11 +120,10 @@ export default async function DashboardPage() {
           Enrolled Courses
         </h1>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-          {enrolledCourses.map((course) => (
+          {enrolledCourses.map(async (course) => (
             <Link
-              href={`/courses/${course.slug}/${course.chapters[0]?.lessons[0]?.id}`}
+              href={`/course/${course.slug}/learn/${course.lastStudiedLessonId}`}
               key={course.slug}
-              passHref={true}
             >
               <Card className="group">
                 <CardHeader className="relative">
@@ -143,17 +151,19 @@ export default async function DashboardPage() {
         </h1>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
           {availableCourses.map((course) => (
-            <Card key={course.slug} className="group">
-              <CardHeader>
-                <CardTitle className="font-bold line-clamp-2">
-                  {course.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="line-clamp-2 mb-4">{course.description}</p>
-                <EnrollButton courseId={course.id} />
-              </CardContent>
-            </Card>
+            <Link href={`/course/${course.slug}`} key={course.slug}>
+              <Card className="group">
+                <CardHeader>
+                  <CardTitle className="font-bold line-clamp-2">
+                    {course.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="line-clamp-2 mb-4">{course.description}</p>
+                  <EnrollButton courseId={course.id} />
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
