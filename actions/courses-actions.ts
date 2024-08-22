@@ -94,8 +94,14 @@ export async function getCourse(slug: string, userId: string) {
     },
     include: {
       chapters: {
+        orderBy: {
+          index: "asc",
+        },
         include: {
           lessons: {
+            orderBy: {
+              index: "asc",
+            },
             include: {
               progress: {
                 where: {
@@ -110,15 +116,18 @@ export async function getCourse(slug: string, userId: string) {
             },
           },
         },
-        orderBy: {
-          index: "asc",
+      },
+      enrollments: {
+        where: {
+          userId: userId,
         },
       },
-      enrollments: true,
     },
   });
 
   if (!course) return null;
+
+  console.log("Raw course data:", JSON.stringify(course, null, 2));
 
   // Find the last studied lesson
   let lastStudiedLesson = null;
@@ -137,6 +146,7 @@ export async function getCourse(slug: string, userId: string) {
 
   return {
     ...course,
+    isEnrolled: course.enrollments.length > 0,
     lastStudiedLessonId: lastStudiedLesson ? lastStudiedLesson.id : null,
   };
 }

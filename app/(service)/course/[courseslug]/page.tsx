@@ -13,7 +13,7 @@ import { auth } from "@/auth";
 
 interface CoursePageProps {
   params: {
-    slug: string;
+    courseslug: string;
   };
 }
 
@@ -25,15 +25,30 @@ const CoursePage = async ({ params }: CoursePageProps) => {
     return <div>Unauthorized</div>;
   }
 
-  const { slug } = params;
-  const course = await getCourse(slug, user.id);
+  const { courseslug } = params;
+  const course = await getCourse(courseslug, user.id);
 
   if (!course) {
     return <div>Course not found</div>;
   }
 
-  const firstChapterId = course.chapters[0]?.id;
-  const firstLessonId = course.chapters[0]?.lessons[0]?.id;
+  console.log("Course data:", JSON.stringify(course, null, 2));
+
+  const firstChapter = course.chapters[0];
+  const firstLesson = firstChapter?.lessons[0];
+
+  console.log("First chapter:", firstChapter);
+  console.log("First lesson:", firstLesson);
+
+  if (!firstChapter || !firstLesson) {
+    return <div>No lessons available for this course</div>;
+  }
+
+  const firstChapterId = firstChapter.id;
+  const firstLessonId = firstLesson.id;
+
+  console.log("First chapter ID:", firstChapterId);
+  console.log("First lesson ID:", firstLessonId);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -41,9 +56,15 @@ const CoursePage = async ({ params }: CoursePageProps) => {
         Course Overview: {course.title}
       </h1>
 
-      <Link href={`/course/${slug}/learn/${firstChapterId}/${firstLessonId}`}>
-        <Button className="mt-4">Start Course</Button>
-      </Link>
+      {firstChapterId && firstLessonId ? (
+        <Link
+          href={`/course/${courseslug}/learn/${firstChapterId}/${firstLessonId}`}
+        >
+          <Button className="mt-4">Start Course</Button>
+        </Link>
+      ) : (
+        <div>Unable to start course: Missing chapter or lesson information</div>
+      )}
 
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Course Description</h2>
