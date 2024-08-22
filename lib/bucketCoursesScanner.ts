@@ -19,11 +19,11 @@ import {
 const bucketName = "courses";
 
 const minioClient = new Minio.Client({
-  endPoint: "localhost",
+  endPoint: "minio-i8cosgww80cco80k08w8kkgk.coolify.professionnal.net",
   port: 9000,
-  useSSL: false,
-  accessKey: process.env.MINIO_ADMIN_PASSWORD || "",
-  secretKey: process.env.MINIO_ADMIN_USER || "",
+  useSSL: true,
+  accessKey: process.env.MINIO_ADMIN_USER || "",
+  secretKey: process.env.MINIO_ADMIN_PASSWORD || "",
 });
 
 export async function listObjects(bucketName: string, prefix: string) {
