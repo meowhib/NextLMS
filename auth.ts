@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  secret: process.env.AUTH_SECRET,
   providers: [
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
