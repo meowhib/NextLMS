@@ -151,7 +151,7 @@ export default async function DashboardPage() {
                 href={`/course/${course.slug}/learn/${lastVisitedLesson}`}
                 key={course.slug}
               >
-                <Card className="group">
+                <Card className="group size-full flex flex-col justify-between">
                   <CardHeader className="relative">
                     <CardTitle className="font-bold line-clamp-2 flex flex-row items-center justify-between space-y-0 pb-2">
                       {course.title}
