@@ -155,29 +155,35 @@ export async function scanBucketCourses() {
     for (const [courseSlug, chapters] of Object.entries(
       coursesChaptersLessons
     )) {
-      if (existingCourses.has(courseSlug)) {
-        console.log(`❌ Course "${courseSlug}" already exists.`);
-        continue;
-      }
-
       const courseTitle = courseSlug.replace(/-/g, " ");
       const slugifiedCourseSlug = slugify(courseTitle, {
         lower: true,
         strict: true,
       });
-      const course = await createCourse(slugifiedCourseSlug, courseTitle);
+
+      const course = await createOrUpdateCourse(
+        slugifiedCourseSlug,
+        courseTitle
+      );
+      console.log(`📚 Upserted course: "${course.title}"`);
+
       let chapterCount = 0;
       let lessonCount = 0;
 
       for (const [chapterSlug, lessonContents] of Object.entries(chapters)) {
         const { name: chapterName, index: chapterIndex } =
           getNameAndIndex(chapterSlug);
-        const chapter = await createChapter(
-          course.id,
-          chapterName,
-          chapterIndex
-        );
-        chapterCount++;
+        let chapter = await prisma.chapter.findFirst({
+          where: { courseId: course.id, index: chapterIndex },
+        });
+
+        if (!chapter) {
+          chapter = await createChapter(course.id, chapterName, chapterIndex);
+          chapterCount++;
+          console.log(`  ✅ Created new chapter: "${chapterName}"`);
+        } else {
+          console.log(`  📖 Updating existing chapter: "${chapter.title}"`);
+        }
 
         const allLessons = mergeByIndex(lessonContents);
 
@@ -185,13 +191,32 @@ export async function scanBucketCourses() {
           const { name: lessonName, index: lessonIndex } = getNameAndIndex(
             lesson.path
           );
-          const lessonData = await createLesson(
-            chapter.id,
-            lessonName,
-            lessonIndex,
-            `${courseSlug}/${chapterSlug}/${lesson.path}`
-          );
-          lessonCount++;
+          let lessonData = await prisma.lesson.findFirst({
+            where: { chapterId: chapter.id, index: lessonIndex },
+          });
+
+          if (!lessonData) {
+            lessonData = await createLesson(
+              chapter.id,
+              lessonName,
+              lessonIndex,
+              `${courseSlug}/${chapterSlug}/${lesson.path}`
+            );
+            lessonCount++;
+            console.log(`    ✅ Created new lesson: "${lessonName}"`);
+          } else {
+            console.log(
+              `    📝 Updating existing lesson: "${lessonData.title}"`
+            );
+          }
+
+          // Update subtitles and materials
+          await prisma.subtitle.deleteMany({
+            where: { lessonId: lessonData.id },
+          });
+          await prisma.material.deleteMany({
+            where: { lessonId: lessonData.id },
+          });
 
           for (const subtitle of lesson.subtitles) {
             await linkSubtitleToLesson(
@@ -210,12 +235,36 @@ export async function scanBucketCourses() {
       }
 
       console.log(
-        `✅ Course "${courseSlug}" scanned successfully with ${chapterCount} chapters and ${lessonCount} lessons.`
+        `✅ Course "${course.title}" scanned successfully with ${chapterCount} new chapters and ${lessonCount} new lessons.`
       );
     }
   } catch (error) {
     console.error("Error scanning courses:", error);
   }
+}
+
+async function createOrUpdateCourse(slug: string, title: string) {
+  let course = await prisma.course.findUnique({
+    where: { slug },
+  });
+
+  if (course) {
+    course = await prisma.course.update({
+      where: { slug },
+      data: { title },
+    });
+    console.log(`📚 Updated existing course: "${course.title}"`);
+  } else {
+    course = await prisma.course.create({
+      data: {
+        slug,
+        title,
+      },
+    });
+    console.log(`📚 Created new course: "${course.title}"`);
+  }
+
+  return course;
 }
 
 function mergeByIndex(contents: {

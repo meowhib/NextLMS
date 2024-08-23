@@ -32,11 +32,10 @@ export function getNameAndIndex(input: string) {
 
 // Create a course in the database
 export async function createCourse(slug: string, title: string) {
-  return prisma.course.create({
-    data: {
-      slug,
-      title,
-    },
+  return prisma.course.upsert({
+    where: { slug },
+    update: { title },
+    create: { slug, title },
   });
 }
 
@@ -98,4 +97,28 @@ export async function linkMaterialToLesson(
       path: materialPath,
     },
   });
+}
+
+async function createOrUpdateCourse(slug: string, title: string) {
+  let course = await prisma.course.findUnique({
+    where: { slug },
+  });
+
+  if (course) {
+    course = await prisma.course.update({
+      where: { slug },
+      data: { title },
+    });
+    console.log(`📚 Updated existing course: "${course.title}"`);
+  } else {
+    course = await prisma.course.create({
+      data: {
+        slug,
+        title,
+      },
+    });
+    console.log(`📚 Created new course: "${course.title}"`);
+  }
+
+  return course;
 }
