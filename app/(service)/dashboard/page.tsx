@@ -13,9 +13,7 @@ import { Label } from "@/components/ui/label";
 import { getEnrolledCourses, getCourses } from "@/actions/courses-actions";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { enrollInCourse } from "@/actions/enrollment-actions";
 import { EnrollButton } from "@/components/EnrollButton";
-import { getLastVisitedLesson } from "@/actions/lessons-actions";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -44,7 +42,9 @@ export default async function DashboardPage() {
       acc +
       course.chapters.reduce(
         (acc, chapter) =>
-          acc + chapter.lessons.filter((lesson) => lesson.completed).length,
+          acc +
+          chapter.lessons.filter((lesson) => lesson.progress[0]?.completed)
+            .length,
         0
       ),
     0
@@ -108,14 +108,12 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Courses to explore
+              Enrolled courses
             </CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {numberOfUnenrolledCourses}
-            </div>
+            <div className="text-2xl font-bold">{numberOfEnrolledCourses}</div>
           </CardContent>
         </Card>
       </div>
