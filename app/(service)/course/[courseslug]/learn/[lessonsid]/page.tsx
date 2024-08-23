@@ -72,30 +72,42 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 className="w-full"
                 defaultValue={`chapter-${currentChapterIndex}`}
               >
-                {course.chapters.map((chapter, index) => (
-                  <AccordionItem key={chapter.id} value={`chapter-${index}`}>
-                    <AccordionTrigger className="text-left">
-                      {chapter.title}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-2">
-                        {chapter.lessons.map((chapterLesson) => (
-                          <li key={chapterLesson.id}>
-                            <LessonCard
-                              lessonId={chapterLesson.id}
-                              courseSlug={course.slug}
-                              title={chapterLesson.title}
-                              isCompleted={
-                                chapterLesson.progress[0]?.completed || false
-                              }
-                              isCurrentLesson={chapterLesson.id === lesson.id}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                {course.chapters.map((chapter, index) => {
+                  const totalLessons = chapter.lessons.length;
+                  const completedLessons = chapter.lessons.filter(
+                    (lesson) => lesson.progress[0]?.completed
+                  ).length;
+
+                  return (
+                    <AccordionItem key={chapter.id} value={`chapter-${index}`}>
+                      <AccordionTrigger className="text-left">
+                        <div className="flex justify-between w-full">
+                          <span>{chapter.title}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {completedLessons}/{totalLessons}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="space-y-2">
+                          {chapter.lessons.map((chapterLesson) => (
+                            <li key={chapterLesson.id}>
+                              <LessonCard
+                                lessonId={chapterLesson.id}
+                                courseSlug={course.slug}
+                                title={chapterLesson.title}
+                                isCompleted={
+                                  chapterLesson.progress[0]?.completed || false
+                                }
+                                isCurrentLesson={chapterLesson.id === lesson.id}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
               </Accordion>
             </div>
           </ScrollArea>
