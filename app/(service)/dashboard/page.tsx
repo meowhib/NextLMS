@@ -125,14 +125,26 @@ export default async function DashboardPage() {
           Enrolled Courses
         </h1>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-          {enrolledCourses.map(async (course) => {
+          {enrolledCourses.map((course) => {
+            const totalLessons = course.chapters.reduce(
+              (acc, chapter) => acc + chapter.lessons.length,
+              0
+            );
+            const completedLessons = course.chapters.reduce(
+              (acc, chapter) =>
+                acc +
+                chapter.lessons.filter(
+                  (lesson) => lesson.progress[0]?.completed
+                ).length,
+              0
+            );
+            const progressPercentage = (completedLessons / totalLessons) * 100;
+
             const lastVisitedLesson =
               course.lastStudiedLessonId ??
               course.chapters.find((chapter) => chapter.lessons.length > 0)
                 ?.lessons[0]?.id ??
               null;
-
-            console.log(course);
 
             return (
               <Link
@@ -146,10 +158,15 @@ export default async function DashboardPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Progress value={50} className="h-2">
+                    <div className="mb-2 text-sm text-muted-foreground">
+                      {completedLessons} / {totalLessons} lessons completed
+                    </div>
+                    <Progress value={progressPercentage} className="h-2">
                       <div className="mb-1 flex w-full justify-between">
                         <Label className="text-sm">Progress</Label>
-                        <span className="text-sm">60%</span>
+                        <span className="text-sm">
+                          {Math.round(progressPercentage)}%
+                        </span>
                       </div>
                     </Progress>
                   </CardContent>
