@@ -74,11 +74,20 @@ export async function scanLocalCourses() {
         const extension = path.extname(file).toLowerCase();
         if (videoExtensions.includes(extension)) {
           console.log(`📽️ Scanning lesson: ${lessonName}`);
+          const materialFiles = files.filter((f: string) => {
+            const { index: materialIndex } = getNameAndIndex(f);
+            return (
+              materialIndex === lessonIndex &&
+              materialExtensions.includes(path.extname(f).toLowerCase())
+            );
+          });
           const lesson = await createLesson(
             chapter.id,
             lessonName,
             lessonIndex,
-            path.join(courseDir, chapterDir, file)
+            path.join(courseDir, chapterDir, file),
+            false,
+            materialFiles.map((f) => path.join(courseDir, chapterDir, f))
           );
           lessonCount++;
 
@@ -99,14 +108,6 @@ export async function scanLocalCourses() {
             const subtitlePath = path.join(courseDir, chapterDir, subtitleFile);
             await linkSubtitleToLesson(lesson.id, subtitlePath);
           }
-
-          const materialFiles = files.filter((f: string) => {
-            const { index: materialIndex } = getNameAndIndex(f);
-            return (
-              materialIndex === lessonIndex &&
-              materialExtensions.includes(path.extname(f).toLowerCase())
-            );
-          });
 
           console.log(
             `${materialFiles.length} material files found for "${lessonName}".`

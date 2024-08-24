@@ -201,7 +201,8 @@ export async function scanBucketCourses() {
               lessonName,
               lessonIndex,
               `${courseSlug}/${chapterSlug}/${lesson.path}`,
-              lesson.isAttachment
+              lesson.isAttachment,
+              lesson.materials.map((m) => `${courseSlug}/${chapterSlug}/${m}`)
             );
             lessonCount++;
             console.log(

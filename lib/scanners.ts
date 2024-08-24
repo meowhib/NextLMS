@@ -60,7 +60,8 @@ export async function createLesson(
   title: string,
   index: number,
   videoPath: string,
-  isAttachment: boolean
+  isAttachment: boolean,
+  attachments: string[] = []
 ) {
   return prisma.lesson.create({
     data: {
@@ -69,8 +70,59 @@ export async function createLesson(
       index,
       videoPath,
       isAttachment,
+      attachments: {
+        createMany: {
+          data: attachments.map((attachmentPath) => ({
+            path: attachmentPath,
+            type: getAttachmentType(attachmentPath),
+          })),
+        },
+      },
     },
   });
+}
+
+function getAttachmentType(filePath: string): string {
+  const extension = path.extname(filePath).toLowerCase();
+  switch (extension) {
+    case ".pdf":
+      return "pdf";
+    case ".txt":
+      return "txt";
+    case ".doc":
+    case ".docx":
+      return "document";
+    case ".xls":
+    case ".xlsx":
+      return "spreadsheet";
+    case ".ppt":
+    case ".pptx":
+      return "presentation";
+    case ".jpg":
+    case ".jpeg":
+    case ".png":
+    case ".gif":
+      return "image";
+    case ".mp3":
+    case ".wav":
+      return "audio";
+    case ".mp4":
+    case ".mov":
+    case ".avi":
+      return "video";
+    case ".zip":
+    case ".rar":
+    case ".7z":
+      return "archive";
+    case ".html":
+    case ".css":
+    case ".js":
+      return "code";
+    case ".url":
+      return "link";
+    default:
+      return "other";
+  }
 }
 
 // Link a subtitle to a lesson in the database

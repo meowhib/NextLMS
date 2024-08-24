@@ -9,6 +9,7 @@ export async function getLesson(lessonId: string) {
     },
     include: {
       chapter: true,
+      attachments: true,
     },
   });
 

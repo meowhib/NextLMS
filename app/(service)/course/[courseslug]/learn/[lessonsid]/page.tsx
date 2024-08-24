@@ -124,9 +124,38 @@ export default async function LessonPage({ params }: LessonPageProps) {
         </div>
         <h2 className="text-2xl font-semibold mb-6">{lesson.title}</h2>
         {/* Add more lesson content here */}
-        <div className="prose max-w-none">
+        <div className="prose max-w-none mb-6">
           <p>Lesson content goes here...</p>
         </div>
+
+        {/* Attachments section */}
+        {lesson.attachments ? (
+          lesson.attachments.length > 0 ? (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-4">Lesson Attachments</h3>
+              <ul className="space-y-2">
+                {lesson.attachments.map((attachment) => (
+                  <li key={attachment.id}>
+                    <a
+                      href={`${MINIO_STORAGE_URL}/courses/${attachment.path}`}
+                      download
+                      className="flex items-center p-2 hover:bg-gray-100 rounded"
+                    >
+                      {getFileIcon(path.extname(attachment.path))}
+                      <span className="ml-2">
+                        {path.basename(attachment.path)}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="mt-8">No attachments for this lesson.</div>
+          )
+        ) : (
+          <div className="mt-8">Error: Attachments data is undefined.</div>
+        )}
       </div>
 
       {/* Sidebar with Accordion */}
