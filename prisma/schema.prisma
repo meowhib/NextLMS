@@ -94,22 +94,23 @@ model Chapter {
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   index     Int
   title     String
-  lessons   Lesson[]
+  lessons   Lesson[] @relation("ChapterLessons")
 }
 
 model Lesson {
-  id          String               @id @default(cuid())
-  chapterId   String
-  chapter     Chapter              @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  index       Int
-  title       String
-  videoPath   String
+  id           String               @id @default(cuid())
+  chapterId    String
+  index        Int
+  title        String
+  videoPath    String
+  completed    Boolean              @default(false)
+  isAttachment Boolean              @default(false)
   subtitles   Subtitle[]
   materials   Material[]
   attachments Attachment[]
   comments    Comment[]
   progress    UserLessonProgress[]
-  completed   Boolean              @default(false)
+  chapter     Chapter?             @relation("ChapterLessons", fields: [chapterId], references: [id], onDelete: Cascade)
 }
 
 model UserLessonProgress {

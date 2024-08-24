@@ -59,7 +59,8 @@ export async function createLesson(
   chapterId: string,
   title: string,
   index: number,
-  videoPath: string
+  videoPath: string,
+  isAttachment: boolean
 ) {
   return prisma.lesson.create({
     data: {
@@ -67,6 +68,7 @@ export async function createLesson(
       title,
       index,
       videoPath,
+      isAttachment,
     },
   });
 }

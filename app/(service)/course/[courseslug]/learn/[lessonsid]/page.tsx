@@ -9,15 +9,84 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import LessonCard from "@/components/LessonCard";
+import {
+  FileIcon,
+  FolderIcon,
+  ChevronDown,
+  PlayCircle,
+  CheckCircle,
+  FileTextIcon,
+  FileImageIcon,
+  FileAudioIcon,
+  FileVideoIcon,
+  BookMarked,
+  FileArchiveIcon,
+  FileCodeIcon,
+  FileSpreadsheetIcon,
+  Presentation,
+  LinkIcon,
+} from "lucide-react";
+import Link from "next/link";
+import { getNameAndIndex } from "@/lib/scanners";
+import path from "path";
 
 interface LessonPageProps {
   params: {
     courseslug: string;
     lessonsid: string;
   };
+}
+
+function getFileIcon(extension: string) {
+  switch (extension.toLowerCase()) {
+    case ".pdf":
+      return <BookMarked className="mr-2 h-4 w-4" />;
+    case ".txt":
+    case ".doc":
+    case ".docx":
+      return <FileTextIcon className="mr-2 h-4 w-4" />;
+    case ".jpg":
+    case ".jpeg":
+    case ".png":
+    case ".gif":
+      return <FileImageIcon className="mr-2 h-4 w-4" />;
+    case ".mp3":
+    case ".wav":
+      return <FileAudioIcon className="mr-2 h-4 w-4" />;
+    case ".mp4":
+    case ".mov":
+    case ".avi":
+      return <FileVideoIcon className="mr-2 h-4 w-4" />;
+    case ".zip":
+    case ".rar":
+    case ".7z":
+      return <FileArchiveIcon className="mr-2 h-4 w-4" />;
+    case ".js":
+    case ".ts":
+    case ".py":
+    case ".html":
+    case ".css":
+      return <FileCodeIcon className="mr-2 h-4 w-4" />;
+    case ".xls":
+    case ".xlsx":
+    case ".csv":
+      return <FileSpreadsheetIcon className="mr-2 h-4 w-4" />;
+    case ".ppt":
+    case ".pptx":
+      return <Presentation className="mr-2 h-4 w-4" />;
+    case ".url":
+      return <LinkIcon className="mr-2 h-4 w-4" />;
+    default:
+      return <FileIcon className="mr-2 h-4 w-4" />;
+  }
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
@@ -72,42 +141,125 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 className="w-full"
                 defaultValue={`chapter-${currentChapterIndex}`}
               >
-                {course.chapters.map((chapter, index) => {
-                  const totalLessons = chapter.lessons.length;
-                  const completedLessons = chapter.lessons.filter(
-                    (lesson) => lesson.progress[0]?.completed
-                  ).length;
-
-                  return (
-                    <AccordionItem key={chapter.id} value={`chapter-${index}`}>
-                      <AccordionTrigger className="text-left">
-                        <div className="flex justify-between w-full">
-                          <span>{chapter.title}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {completedLessons}/{totalLessons}
-                          </span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="space-y-2">
-                          {chapter.lessons.map((chapterLesson) => (
-                            <li key={chapterLesson.id}>
-                              <LessonCard
-                                lessonId={chapterLesson.id}
-                                courseSlug={course.slug}
-                                title={chapterLesson.title}
-                                isCompleted={
-                                  chapterLesson.progress[0]?.completed || false
-                                }
-                                isCurrentLesson={chapterLesson.id === lesson.id}
-                              />
+                {course.chapters.map((chapter, chapterIndex) => (
+                  <AccordionItem
+                    key={chapter.id}
+                    value={`chapter-${chapterIndex}`}
+                  >
+                    <AccordionTrigger className="text-left">
+                      <div className="flex justify-between w-full">
+                        <span>{chapter.title}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {
+                            chapter.lessons.filter(
+                              (lesson) => lesson.progress[0]?.completed
+                            ).length
+                          }
+                          /{chapter.lessons.length}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-2">
+                        {chapter.lessons.map((chapterLesson) => (
+                          <li key={chapterLesson.id}>
+                            {chapterLesson.isAttachment ? (
+                              <a
+                                href={`${process.env.MINIO_STORAGE_URL}/courses/${chapterLesson.videoPath}`}
+                                download
+                              >
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-start"
+                                >
+                                  {getFileIcon(
+                                    path.extname(chapterLesson.videoPath)
+                                  )}
+                                  {chapterLesson.title}
+                                </Button>
+                              </a>
+                            ) : (
+                              <Link
+                                href={`/course/${course.slug}/learn/${chapterLesson.id}`}
+                              >
+                                <Button
+                                  variant="ghost"
+                                  className={`w-full justify-start ${
+                                    chapterLesson.id === lesson.id
+                                      ? "bg-secondary"
+                                      : ""
+                                  }`}
+                                >
+                                  {chapterLesson.progress[0]?.completed ? (
+                                    <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <PlayCircle className="mr-2 h-4 w-4" />
+                                  )}
+                                  {chapterLesson.title}
+                                </Button>
+                              </Link>
+                            )}
+                          </li>
+                        ))}
+                        {chapter.lessons
+                          .filter((lesson) => lesson.attachments.length > 0)
+                          .map((attachmentLesson) => (
+                            <li key={attachmentLesson.id}>
+                              {attachmentLesson.attachments.length > 1 ? (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="w-full justify-start"
+                                    >
+                                      <FolderIcon className="mr-2 h-4 w-4" />
+                                      {attachmentLesson.title}
+                                      <ChevronDown className="ml-auto h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    {attachmentLesson.attachments.map(
+                                      (file) => (
+                                        <DropdownMenuItem key={file.id}>
+                                          <a
+                                            href={`${process.env.MINIO_STORAGE_URL}/courses/${file.path}`}
+                                            download
+                                            className="flex items-center"
+                                          >
+                                            {getFileIcon(
+                                              path.extname(file.path)
+                                            )}
+                                            {file.path.split("/").pop()}
+                                          </a>
+                                        </DropdownMenuItem>
+                                      )
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              ) : (
+                                <a
+                                  href={`${process.env.MINIO_STORAGE_URL}/courses/${attachmentLesson.attachments[0].path}`}
+                                  download
+                                >
+                                  <Button
+                                    variant="ghost"
+                                    className="w-full justify-start"
+                                  >
+                                    {getFileIcon(
+                                      path.extname(
+                                        attachmentLesson.attachments[0].path
+                                      )
+                                    )}
+                                    {attachmentLesson.title}
+                                  </Button>
+                                </a>
+                              )}
                             </li>
                           ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
-                  );
-                })}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
               </Accordion>
             </div>
           </ScrollArea>

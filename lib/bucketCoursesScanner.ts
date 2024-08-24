@@ -200,13 +200,20 @@ export async function scanBucketCourses() {
               chapter.id,
               lessonName,
               lessonIndex,
-              `${courseSlug}/${chapterSlug}/${lesson.path}`
+              `${courseSlug}/${chapterSlug}/${lesson.path}`,
+              lesson.isAttachment
             );
             lessonCount++;
-            console.log(`    ✅ Created new lesson: "${lessonName}"`);
+            console.log(
+              `    ✅ Created new ${
+                lesson.isAttachment ? "attachment" : "lesson"
+              }: "${lessonName}"`
+            );
           } else {
             console.log(
-              `    📝 Updating existing lesson: "${lessonData.title}"`
+              `    📝 Updating existing ${
+                lessonData.isAttachment ? "attachment" : "lesson"
+              }: "${lessonData.title}"`
             );
           }
 
@@ -278,11 +285,19 @@ function mergeByIndex(contents: {
     path: string;
     materials: string[];
     subtitles: string[];
+    isAttachment: boolean;
   }[] = [];
 
   contents.videos.forEach((video) => {
     const { name, index } = getNameAndIndex(video);
-    lessons.push({ name, index, path: video, materials: [], subtitles: [] });
+    lessons.push({
+      name,
+      index,
+      path: video,
+      materials: [],
+      subtitles: [],
+      isAttachment: false,
+    });
   });
 
   lessons.forEach((lesson) => {
@@ -300,6 +315,24 @@ function mergeByIndex(contents: {
       }
     });
   });
+
+  // Add standalone attachments as lessons
+  contents.materials.forEach((material) => {
+    const { name, index } = getNameAndIndex(material);
+    if (!lessons.some((lesson) => lesson.index === index)) {
+      lessons.push({
+        name,
+        index,
+        path: material,
+        materials: [material],
+        subtitles: [],
+        isAttachment: true,
+      });
+    }
+  });
+
+  // Sort lessons by index
+  lessons.sort((a, b) => a.index - b.index);
 
   return lessons;
 }
