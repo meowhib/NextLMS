@@ -10,6 +10,15 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import path from "path";
+import { FileIcon } from "@/components/FileIcon";
+import { getFileIcon } from "@/lib/utils";
 
 interface CoursePageProps {
   params: {
@@ -86,10 +95,33 @@ const CoursePage = async ({ params }: CoursePageProps) => {
                     >
                       <span>{lesson.title}</span>
                       {lesson.attachments.length > 0 && (
-                        <span className="flex items-center text-sm text-gray-500">
-                          <Paperclip className="w-4 h-4 mr-1" />
-                          {lesson.attachments.length}
-                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Paperclip className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {lesson.attachments.map((attachment) => (
+                              <DropdownMenuItem key={attachment.id}>
+                                <a
+                                  href={`${process.env.MINIO_STORAGE_URL}/courses/${attachment.path}`}
+                                  download
+                                  className="flex items-center"
+                                >
+                                  <FileIcon
+                                    iconType={getFileIcon(
+                                      path.extname(attachment.path)
+                                    )}
+                                  />
+                                  <span className="ml-2">
+                                    {path.basename(attachment.path)}
+                                  </span>
+                                </a>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </li>
                   ))}

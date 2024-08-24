@@ -17,76 +17,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  FileIcon,
-  FolderIcon,
-  ChevronDown,
-  PlayCircle,
-  CheckCircle,
-  FileTextIcon,
-  FileImageIcon,
-  FileAudioIcon,
-  FileVideoIcon,
-  BookMarked,
-  FileArchiveIcon,
-  FileCodeIcon,
-  FileSpreadsheetIcon,
-  Presentation,
-  LinkIcon,
-} from "lucide-react";
+import { FileIcon } from "@/components/FileIcon";
+import { getFileIcon } from "@/lib/utils";
 import Link from "next/link";
 import { getNameAndIndex } from "@/lib/scanners";
 import path from "path";
+import {
+  CheckCircle,
+  ChevronDown,
+  FolderIcon,
+  PlayCircle,
+  Paperclip,
+} from "lucide-react";
 
 interface LessonPageProps {
   params: {
     courseslug: string;
     lessonsid: string;
   };
-}
-
-function getFileIcon(extension: string) {
-  switch (extension.toLowerCase()) {
-    case ".pdf":
-      return <BookMarked className="mr-2 h-4 w-4" />;
-    case ".txt":
-    case ".doc":
-    case ".docx":
-      return <FileTextIcon className="mr-2 h-4 w-4" />;
-    case ".jpg":
-    case ".jpeg":
-    case ".png":
-    case ".gif":
-      return <FileImageIcon className="mr-2 h-4 w-4" />;
-    case ".mp3":
-    case ".wav":
-      return <FileAudioIcon className="mr-2 h-4 w-4" />;
-    case ".mp4":
-    case ".mov":
-    case ".avi":
-      return <FileVideoIcon className="mr-2 h-4 w-4" />;
-    case ".zip":
-    case ".rar":
-    case ".7z":
-      return <FileArchiveIcon className="mr-2 h-4 w-4" />;
-    case ".js":
-    case ".ts":
-    case ".py":
-    case ".html":
-    case ".css":
-      return <FileCodeIcon className="mr-2 h-4 w-4" />;
-    case ".xls":
-    case ".xlsx":
-    case ".csv":
-      return <FileSpreadsheetIcon className="mr-2 h-4 w-4" />;
-    case ".ppt":
-    case ".pptx":
-      return <Presentation className="mr-2 h-4 w-4" />;
-    case ".url":
-      return <LinkIcon className="mr-2 h-4 w-4" />;
-    default:
-      return <FileIcon className="mr-2 h-4 w-4" />;
-  }
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
@@ -141,7 +89,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       download
                       className="flex items-center p-2 hover:bg-gray-100 rounded"
                     >
-                      {getFileIcon(path.extname(attachment.path))}
+                      <FileIcon
+                        iconType={getFileIcon(path.extname(attachment.path))}
+                      />
                       <span className="ml-2">
                         {path.basename(attachment.path)}
                       </span>
@@ -199,92 +149,79 @@ export default async function LessonPage({ params }: LessonPageProps) {
                               >
                                 <Button
                                   variant="ghost"
-                                  className="w-full justify-start"
+                                  className="w-full justify-between"
                                 >
-                                  {getFileIcon(
-                                    path.extname(chapterLesson.videoPath)
-                                  )}
-                                  {chapterLesson.title}
+                                  <div className="flex items-center">
+                                    <FileIcon
+                                      iconType={getFileIcon(
+                                        path.extname(chapterLesson.videoPath)
+                                      )}
+                                    />
+                                    <span className="ml-2">
+                                      {chapterLesson.title}
+                                    </span>
+                                  </div>
                                 </Button>
                               </a>
                             ) : (
-                              <Link
-                                href={`/course/${course.slug}/learn/${chapterLesson.id}`}
-                              >
-                                <Button
-                                  variant="ghost"
-                                  className={`w-full justify-start ${
-                                    chapterLesson.id === lesson.id
-                                      ? "bg-secondary"
-                                      : ""
-                                  }`}
+                              <div className="flex items-center justify-between">
+                                <Link
+                                  href={`/course/${course.slug}/learn/${chapterLesson.id}`}
+                                  className="flex-grow"
                                 >
-                                  {chapterLesson.progress[0]?.completed ? (
-                                    <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                                  ) : (
-                                    <PlayCircle className="mr-2 h-4 w-4" />
-                                  )}
-                                  {chapterLesson.title}
-                                </Button>
-                              </Link>
-                            )}
-                          </li>
-                        ))}
-                        {chapter.lessons
-                          .filter((lesson) => lesson.attachments.length > 0)
-                          .map((attachmentLesson) => (
-                            <li key={attachmentLesson.id}>
-                              {attachmentLesson.attachments.length > 1 ? (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      className="w-full justify-start"
-                                    >
-                                      <FolderIcon className="mr-2 h-4 w-4" />
-                                      {attachmentLesson.title}
-                                      <ChevronDown className="ml-auto h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    {attachmentLesson.attachments.map(
-                                      (file) => (
+                                  <Button
+                                    variant="ghost"
+                                    className={`w-full justify-start ${
+                                      chapterLesson.id === lesson.id
+                                        ? "bg-secondary"
+                                        : ""
+                                    }`}
+                                  >
+                                    {chapterLesson.progress[0]?.completed ? (
+                                      <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                    ) : (
+                                      <PlayCircle className="mr-2 h-4 w-4" />
+                                    )}
+                                    {chapterLesson.title}
+                                  </Button>
+                                </Link>
+                                {chapterLesson.attachments.length > 0 && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="ml-2"
+                                      >
+                                        <Paperclip className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      {chapterLesson.attachments.map((file) => (
                                         <DropdownMenuItem key={file.id}>
                                           <a
                                             href={`${process.env.MINIO_STORAGE_URL}/courses/${file.path}`}
                                             download
                                             className="flex items-center"
                                           >
-                                            {getFileIcon(
-                                              path.extname(file.path)
-                                            )}
-                                            {file.path.split("/").pop()}
+                                            <FileIcon
+                                              iconType={getFileIcon(
+                                                path.extname(file.path)
+                                              )}
+                                            />
+                                            <span className="ml-2">
+                                              {file.path.split("/").pop()}
+                                            </span>
                                           </a>
                                         </DropdownMenuItem>
-                                      )
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              ) : (
-                                <a
-                                  href={`${process.env.MINIO_STORAGE_URL}/courses/${attachmentLesson.attachments[0].path}`}
-                                  download
-                                >
-                                  <Button
-                                    variant="ghost"
-                                    className="w-full justify-start"
-                                  >
-                                    {getFileIcon(
-                                      path.extname(
-                                        attachmentLesson.attachments[0].path
-                                      )
-                                    )}
-                                    {attachmentLesson.title}
-                                  </Button>
-                                </a>
-                              )}
-                            </li>
-                          ))}
+                                      ))}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
+                              </div>
+                            )}
+                          </li>
+                        ))}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
