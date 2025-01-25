@@ -153,7 +153,7 @@ export async function linkMaterialToLesson(
   });
 }
 
-async function createOrUpdateCourse(slug: string, title: string) {
+export async function createOrUpdateCourse(slug: string, title: string) {
   let course = await prisma.course.findUnique({
     where: { slug },
   });

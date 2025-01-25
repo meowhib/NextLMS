@@ -14,6 +14,7 @@ import {
   createLesson,
   linkMaterialToLesson,
   linkSubtitleToLesson,
+  createOrUpdateCourse,
 } from "@/lib/scanners";
 
 const bucketName = "courses";
@@ -116,40 +117,43 @@ export async function scanBucketCourses() {
       >
     > = {};
 
-    for await (const obj of stream) {
-      if (!obj.name) {
-        continue;
-      }
+    try {
+      for await (const obj of stream) {
+        if (!obj.name) continue;
+        
+        const parts = obj.name.split("/");
+        const courseSlug = parts[0];
+        const chapterSlug = parts[1];
+        const lessonName = parts[2];
 
-      const parts = obj.name.split("/");
-      const courseSlug = parts[0];
-      const chapterSlug = parts[1];
-      const lessonName = parts[2];
+        if (!coursesChaptersLessons[courseSlug]) {
+          coursesChaptersLessons[courseSlug] = {};
+        }
 
-      if (!coursesChaptersLessons[courseSlug]) {
-        coursesChaptersLessons[courseSlug] = {};
-      }
+        if (!coursesChaptersLessons[courseSlug][chapterSlug]) {
+          coursesChaptersLessons[courseSlug][chapterSlug] = {
+            videos: [],
+            materials: [],
+            subtitles: [],
+          };
+        }
 
-      if (!coursesChaptersLessons[courseSlug][chapterSlug]) {
-        coursesChaptersLessons[courseSlug][chapterSlug] = {
-          videos: [],
-          materials: [],
-          subtitles: [],
-        };
+        const extension = path.extname(lessonName).toLowerCase();
+        if (videoExtensions.includes(extension)) {
+          coursesChaptersLessons[courseSlug][chapterSlug].videos.push(lessonName);
+        } else if (subtitleExtensions.includes(extension)) {
+          coursesChaptersLessons[courseSlug][chapterSlug].subtitles.push(
+            lessonName
+          );
+        } else if (materialExtensions.includes(extension)) {
+          coursesChaptersLessons[courseSlug][chapterSlug].materials.push(
+            lessonName
+          );
+        }
       }
-
-      const extension = path.extname(lessonName).toLowerCase();
-      if (videoExtensions.includes(extension)) {
-        coursesChaptersLessons[courseSlug][chapterSlug].videos.push(lessonName);
-      } else if (subtitleExtensions.includes(extension)) {
-        coursesChaptersLessons[courseSlug][chapterSlug].subtitles.push(
-          lessonName
-        );
-      } else if (materialExtensions.includes(extension)) {
-        coursesChaptersLessons[courseSlug][chapterSlug].materials.push(
-          lessonName
-        );
-      }
+    } catch (error) {
+      console.error("Error processing bucket objects:", error);
+      return;
     }
 
     for (const [courseSlug, chapters] of Object.entries(
@@ -251,89 +255,62 @@ export async function scanBucketCourses() {
   }
 }
 
-async function createOrUpdateCourse(slug: string, title: string) {
-  let course = await prisma.course.findUnique({
-    where: { slug },
-  });
-
-  if (course) {
-    course = await prisma.course.update({
-      where: { slug },
-      data: { title },
-    });
-    console.log(`📚 Updated existing course: "${course.title}"`);
-  } else {
-    course = await prisma.course.create({
-      data: {
-        slug,
-        title,
-      },
-    });
-    console.log(`📚 Created new course: "${course.title}"`);
-  }
-
-  return course;
+interface LessonData {
+  index: number;
+  name: string;
+  path: string;
+  materials: string[];
+  subtitles: string[];
+  isAttachment: boolean;
 }
 
 function mergeByIndex(contents: {
   videos: string[];
   materials: string[];
   subtitles: string[];
-}) {
-  const lessons: {
-    name: string;
-    index: number;
-    path: string;
-    materials: string[];
-    subtitles: string[];
-    isAttachment: boolean;
-  }[] = [];
+}): LessonData[] {
+  const lessonMap = new Map<number, LessonData>();
 
-  contents.videos.forEach((video) => {
+  // Process videos first
+  contents.videos.forEach(video => {
     const { name, index } = getNameAndIndex(video);
-    lessons.push({
-      name,
+    lessonMap.set(index, {
       index,
+      name,
       path: video,
       materials: [],
       subtitles: [],
-      isAttachment: false,
+      isAttachment: false
     });
   });
 
-  lessons.forEach((lesson) => {
-    contents.materials.forEach((material) => {
-      const { index } = getNameAndIndex(material);
-      if (index === lesson.index) {
-        lesson.materials.push(material);
-      }
-    });
-
-    contents.subtitles.forEach((subtitle) => {
-      const { index } = getNameAndIndex(subtitle);
-      if (index === lesson.index) {
-        lesson.subtitles.push(subtitle);
-      }
-    });
-  });
-
-  // Add standalone attachments as lessons
-  contents.materials.forEach((material) => {
+  // Process materials
+  contents.materials.forEach(material => {
     const { name, index } = getNameAndIndex(material);
-    if (!lessons.some((lesson) => lesson.index === index)) {
-      lessons.push({
-        name,
+    const lesson = lessonMap.get(index);
+    if (lesson) {
+      lesson.materials.push(material);
+    } else {
+      // Only create attachment if no video exists
+      lessonMap.set(index, {
         index,
+        name,
         path: material,
         materials: [material],
         subtitles: [],
-        isAttachment: true,
+        isAttachment: true
       });
     }
   });
 
-  // Sort lessons by index
-  lessons.sort((a, b) => a.index - b.index);
+  // Process subtitles
+  contents.subtitles.forEach(subtitle => {
+    const { index } = getNameAndIndex(subtitle);
+    const lesson = lessonMap.get(index);
+    if (lesson) {
+      lesson.subtitles.push(subtitle);
+    }
+  });
 
-  return lessons;
+  return Array.from(lessonMap.values()).sort((a, b) => a.index - b.index);
 }
