@@ -61,6 +61,45 @@ export default function VideoComponent({
   const [isClient, setIsClient] = useState(false);
   const controlsTimeout = useRef<NodeJS.Timeout>();
 
+  const handlePlayPause = useCallback(() => {
+    setIsPlaying(!isPlaying);
+  }, [isPlaying]);
+
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+    // Save volume to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(VOLUME_STORAGE_KEY, newVolume.toString());
+    }
+  }, []);
+
+  const handleToggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      if (newMuted) {
+        // Store current volume before muting
+        if (volume > 0) {
+          localStorage.setItem(VOLUME_STORAGE_KEY, '0');
+        }
+      } else {
+        // Restore previous volume
+        if (volume === 0) {
+          const previousVolume = '0.8';
+          setVolume(parseFloat(previousVolume));
+          localStorage.setItem(VOLUME_STORAGE_KEY, previousVolume);
+        }
+      }
+      return newMuted;
+    });
+  }, [volume]);
+
+  const handleFullscreenToggle = useCallback(() => {
+    if (containerRef.current && screenfull.isEnabled) {
+      screenfull.toggle(containerRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     setIsClient(true);
     // Only fetch playback speed from API
@@ -84,6 +123,69 @@ export default function VideoComponent({
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in form elements
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+
+      switch (e.key.toLowerCase()) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          handlePlayPause();
+          break;
+        case 'f':
+          e.preventDefault();
+          handleFullscreenToggle();
+          break;
+        case 'arrowup':
+          e.preventDefault();
+          handleVolumeChange(Math.min(volume + 0.05, 1));
+          break;
+        case 'arrowdown':
+          e.preventDefault();
+          handleVolumeChange(Math.max(volume - 0.05, 0));
+          break;
+        case 'arrowleft':
+          e.preventDefault();
+          if (playerRef.current && duration) {
+            const currentTime = playerRef.current.getCurrentTime();
+            const newTime = Math.max(currentTime - 5, 0);
+            playerRef.current.seekTo(newTime);
+            setPlayed(newTime / duration);
+          }
+          break;
+        case 'arrowright':
+          e.preventDefault();
+          if (playerRef.current && duration) {
+            const currentTime = playerRef.current.getCurrentTime();
+            const newTime = Math.min(currentTime + 5, duration);
+            playerRef.current.seekTo(newTime);
+            setPlayed(newTime / duration);
+          }
+          break;
+        case 'm':
+          e.preventDefault();
+          handleToggleMute();
+          break;
+        default:
+          // Handle number keys 0-9 for percentage seeking
+          if (/^[0-9]$/.test(e.key) && duration) {
+            e.preventDefault();
+            const percent = parseInt(e.key) / 10;
+            const seekTime = duration * percent;
+            playerRef.current?.seekTo(seekTime);
+            setPlayed(percent);
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [duration, handlePlayPause, handleFullscreenToggle, handleVolumeChange, handleToggleMute, volume]);
 
   const onReady = useCallback(() => {
     if (!isReady) {
@@ -139,39 +241,6 @@ export default function VideoComponent({
       });
   }
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleVolumeChange = useCallback((newVolume: number) => {
-    setVolume(newVolume);
-    setIsMuted(newVolume === 0);
-    // Save volume to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(VOLUME_STORAGE_KEY, newVolume.toString());
-    }
-  }, []);
-
-  const handleToggleMute = useCallback(() => {
-    setIsMuted(prev => {
-      const newMuted = !prev;
-      if (newMuted) {
-        // Store current volume before muting
-        if (volume > 0) {
-          localStorage.setItem(VOLUME_STORAGE_KEY, '0');
-        }
-      } else {
-        // Restore previous volume
-        if (volume === 0) {
-          const previousVolume = '0.8';
-          setVolume(parseFloat(previousVolume));
-          localStorage.setItem(VOLUME_STORAGE_KEY, previousVolume);
-        }
-      }
-      return newMuted;
-    });
-  }, [volume]);
-
   const handleSeekMouseDown = () => {
     setSeeking(true);
   };
@@ -187,12 +256,6 @@ export default function VideoComponent({
     }
   };
 
-  const handleFullscreenToggle = () => {
-    if (containerRef.current && screenfull.isEnabled) {
-      screenfull.toggle(containerRef.current);
-    }
-  };
-
   const formatTime = (seconds: number) => {
     const pad = (n: number) => n.toString().padStart(2, '0');
     const hours = Math.floor(seconds / 3600);
@@ -203,6 +266,13 @@ export default function VideoComponent({
       : `${minutes}:${pad(secs)}`;
   };
 
+  const handleContainerClick = useCallback((e: React.MouseEvent) => {
+    // Don't toggle play/pause if clicking on controls
+    const target = e.target as HTMLElement;
+    if (target.closest('.video-controls')) return;
+    handlePlayPause();
+  }, [handlePlayPause]);
+
   if (!isClient) {
     return null;
   }
@@ -211,6 +281,8 @@ export default function VideoComponent({
     <div 
       ref={containerRef}
       className="relative w-full aspect-video bg-black group"
+      onClick={handleContainerClick}
+      onDoubleClick={handleFullscreenToggle}
       onMouseEnter={() => {
         setShowControls(true);
         if (controlsTimeout.current) {
@@ -267,7 +339,7 @@ export default function VideoComponent({
 
       {/* Custom Controls Overlay */}
       <div 
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4 transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4 transition-opacity duration-300 video-controls ${
           showControls ? 'opacity-100' : 'opacity-0'
         }`}
       >
