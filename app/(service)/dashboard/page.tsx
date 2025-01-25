@@ -23,6 +23,8 @@ export default async function DashboardPage() {
   }
 
   const enrolledCourses = await getEnrolledCourses(session.user.id);
+  console.log("Enrolled courses data:", JSON.stringify(enrolledCourses, null, 2));
+
   const availableCourses = await getCourses();
 
   // Filter out enrolled courses from available courses
@@ -138,15 +140,32 @@ export default async function DashboardPage() {
             );
             const progressPercentage = (completedLessons / totalLessons) * 100;
 
-            const lastVisitedLesson =
-              course.lastStudiedLessonId ??
-              course.chapters.find((chapter) => chapter.lessons.length > 0)
-                ?.lessons[0]?.id ??
-              null;
+            // Get first lesson ID as fallback
+            const firstLessonId = course.chapters[0]?.lessons[0]?.id;
+            // Use last studied lesson or fall back to first lesson
+            const targetLessonId = course.lastStudiedLessonId ?? firstLessonId;
+
+            console.log(`Course ${course.slug}:`, {
+              lastStudiedLessonId: course.lastStudiedLessonId,
+              firstLessonId,
+              targetLessonId,
+              chaptersCount: course.chapters.length,
+              firstChapterLessons: course.chapters[0]?.lessons.length
+            });
+
+            if (!targetLessonId) {
+              return null; // Skip rendering if no lessons available
+            }
+
+            const href = course.lastStudiedLessonId 
+              ? `/course/${course.slug}/learn/${course.lastStudiedLessonId}`
+              : firstLessonId 
+                ? `/course/${course.slug}/learn/${firstLessonId}`
+                : `/course/${course.slug}`;
 
             return (
               <Link
-                href={`/course/${course.slug}/learn/${lastVisitedLesson}`}
+                href={href}
                 key={course.slug}
               >
                 <Card className="group size-full flex flex-col justify-between">
