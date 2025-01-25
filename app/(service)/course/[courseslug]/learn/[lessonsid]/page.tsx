@@ -85,9 +85,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 {lesson.attachments.map((attachment) => (
                   <li key={attachment.id}>
                     <a
-                      href={`${MINIO_STORAGE_URL}/courses/${attachment.path}`}
+                      href={`https://${MINIO_STORAGE_URL}/courses/${attachment.path}`}
                       download
                       className="flex items-center p-2 hover:bg-gray-100 rounded"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <FileIcon
                         iconType={getFileIcon(path.extname(attachment.path))}
@@ -144,8 +146,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
                           <li key={chapterLesson.id}>
                             {chapterLesson.isAttachment ? (
                               <a
-                                href={`${process.env.MINIO_STORAGE_URL}/courses/${chapterLesson.videoPath}`}
+                                href={`https://${MINIO_STORAGE_URL}/courses/${chapterLesson.videoPath}`}
                                 download
+                                target="_blank"
+                                rel="noopener noreferrer"
                               >
                                 <Button
                                   variant="ghost"
@@ -199,10 +203,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
                                     <DropdownMenuContent>
                                       {chapterLesson.attachments.map((file) => (
                                         <DropdownMenuItem key={file.id}>
-                                          <a
-                                            href={`${process.env.MINIO_STORAGE_URL}/courses/${file.path}`}
+                                          <Link
+                                            href={`https://${MINIO_STORAGE_URL}/courses/${file.path}`}
                                             download
                                             className="flex items-center"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                           >
                                             <FileIcon
                                               iconType={getFileIcon(
@@ -212,7 +218,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                                             <span className="ml-2">
                                               {file.path.split("/").pop()}
                                             </span>
-                                          </a>
+                                          </Link>
                                         </DropdownMenuItem>
                                       ))}
                                     </DropdownMenuContent>
