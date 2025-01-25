@@ -24,6 +24,7 @@ import { signOut } from "next-auth/react";
 import LogoutButton from "@/components/ui/logout-button";
 import { auth } from "@/auth";
 import CourseSearch from "@/components/CourseSearch";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function Dashboard({
   children,
@@ -84,6 +85,7 @@ export default async function Dashboard({
         </div>
         <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
           <CourseSearch />
+          <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">

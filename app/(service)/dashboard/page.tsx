@@ -79,7 +79,7 @@ export default async function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Minutes learned
             </CardTitle>
-            <Hourglass className="h-4 w-4 text-muted-foreground" />
+            <Hourglass className="h-4 w-4 text-[hsl(var(--chart-1))]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Lessons completed
             </CardTitle>
-            <ListChecks className="h-4 w-4 text-muted-foreground" />
+            <ListChecks className="h-4 w-4 text-[hsl(var(--chart-2))]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{numberOfCompletedLessons}</div>
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total lessons</CardTitle>
-            <Presentation className="h-4 w-4 text-muted-foreground" />
+            <Presentation className="h-4 w-4 text-[hsl(var(--chart-3))]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{numberOfLessons}</div>
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Enrolled courses
             </CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            <GraduationCap className="h-4 w-4 text-[hsl(var(--chart-4))]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{numberOfEnrolledCourses}</div>

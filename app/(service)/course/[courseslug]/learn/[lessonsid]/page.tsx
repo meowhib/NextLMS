@@ -87,7 +87,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                     <a
                       href={`https://${MINIO_STORAGE_URL}/courses/${attachment.path}`}
                       download
-                      className="flex items-center p-2 hover:bg-gray-100 rounded"
+                      className="flex items-center p-2 hover:bg-primary/10 rounded"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
