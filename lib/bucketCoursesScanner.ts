@@ -3,6 +3,7 @@ import { getNameAndIndex } from "@/lib/scanners";
 var slugify = require("slugify");
 import prisma from "./prisma";
 import path from "path";
+import { minioClient, bucketName } from "./minio";
 import {
   videoExtensions,
   subtitleExtensions,
@@ -16,16 +17,6 @@ import {
   linkSubtitleToLesson,
   createOrUpdateCourse,
 } from "@/lib/scanners";
-
-const bucketName = "courses";
-
-const minioClient = new Minio.Client({
-  endPoint: "localhost",
-  port: 9000,
-  useSSL: false,
-  accessKey: process.env.MINIO_ADMIN_USER || "",
-  secretKey: process.env.MINIO_ADMIN_PASSWORD || "",
-});
 
 export async function listObjects(bucketName: string, prefix: string) {
   const objects = minioClient.listObjectsV2(bucketName, prefix, true);

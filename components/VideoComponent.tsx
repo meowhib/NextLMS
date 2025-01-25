@@ -74,10 +74,10 @@ export default function VideoComponent({
   return (
     <ReactPlayer
       ref={playerRef}
-      url={src}
+      url={src.startsWith('http') ? src : `https://${src}`}
       playing={isPlaying}
-      height={"100"}
-      width={"100"}
+      height="100%"
+      width="100%"
       progressInterval={5000}
       onProgress={async (progress: any) => {
         if (duration && duration - progress.playedSeconds < 10) {
@@ -94,6 +94,14 @@ export default function VideoComponent({
       controls
       onReady={onReady}
       onDuration={(duration: any) => setDuration(duration)}
+      config={{
+        file: {
+          forceVideo: true,
+          attributes: {
+            crossOrigin: "anonymous"
+          }
+        }
+      }}
     />
   );
 }

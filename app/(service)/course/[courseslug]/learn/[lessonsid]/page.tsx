@@ -38,7 +38,7 @@ interface LessonPageProps {
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
-  const MINIO_STORAGE_URL = process.env.MINIO_STORAGE_URL;
+  const MINIO_STORAGE_URL = process.env.MINIO_ENDPOINT;
 
   const session = await auth();
 
