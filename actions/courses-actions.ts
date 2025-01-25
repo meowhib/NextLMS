@@ -127,7 +127,7 @@ export async function getCourse(slug: string, userId: string) {
 
   if (!course) return null;
 
-  console.log("Raw course data:", JSON.stringify(course, null, 2));
+  // console.log("Raw course data:", JSON.stringify(course, null, 2));
 
   // Find the last studied lesson
   let lastStudiedLesson = null;

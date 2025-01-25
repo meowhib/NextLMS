@@ -35,15 +35,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("📚 User lesson progress:", userLessonProgress);
+    // console.log("📚 User lesson progress:", userLessonProgress);
 
-    console.log(
-      "📚 Progress update:",
-      courseSlug,
-      lessonId,
-      userProgressSeconds,
-      completed
-    );
+    // console.log(
+    //   "📚 Progress update:",
+    //   courseSlug,
+    //   lessonId,
+    //   userProgressSeconds,
+    //   completed
+    // );
 
     return NextResponse.json({ message: "Progress updated!" }, { status: 200 });
   } catch (error) {

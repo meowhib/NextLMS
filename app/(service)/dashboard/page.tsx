@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   }
 
   const enrolledCourses = await getEnrolledCourses(session.user.id);
-  console.log("Enrolled courses data:", JSON.stringify(enrolledCourses, null, 2));
+  // console.log("Enrolled courses data:", JSON.stringify(enrolledCourses, null, 2));
 
   const availableCourses = await getCourses();
 
@@ -145,13 +145,13 @@ export default async function DashboardPage() {
             // Use last studied lesson or fall back to first lesson
             const targetLessonId = course.lastStudiedLessonId ?? firstLessonId;
 
-            console.log(`Course ${course.slug}:`, {
-              lastStudiedLessonId: course.lastStudiedLessonId,
-              firstLessonId,
-              targetLessonId,
-              chaptersCount: course.chapters.length,
-              firstChapterLessons: course.chapters[0]?.lessons.length
-            });
+            // console.log(`Course ${course.slug}:`, {
+            //   lastStudiedLessonId: course.lastStudiedLessonId,
+            //   firstLessonId,
+            //   targetLessonId,
+            //   chaptersCount: course.chapters.length,
+            //   firstChapterLessons: course.chapters[0]?.lessons.length
+            // });
 
             if (!targetLessonId) {
               return null; // Skip rendering if no lessons available

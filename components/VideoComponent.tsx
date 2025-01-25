@@ -21,11 +21,24 @@ export default function VideoComponent({
   const [isPlaying, setIsPlaying] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const playerRef = useRef<ReactPlayer>(null);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    // Fetch user's default playback speed
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(settings => {
+        console.log("Settings:", settings);
+        if (settings?.defaultPlaybackSpeed) {
+          setPlaybackSpeed(settings.defaultPlaybackSpeed);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch user settings:', error);
+      });
   }, []);
 
   const onReady = useCallback(() => {
@@ -36,6 +49,21 @@ export default function VideoComponent({
       setIsPlaying(true);
     }
   }, [isReady, progress]);
+
+  // Function to handle playback rate changes from the player
+  const handlePlaybackRateChange = useCallback((rate: number) => {
+    setPlaybackSpeed(rate);
+    // Save the new playback speed as user's default
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ defaultPlaybackSpeed: rate }),
+    }).catch(error => {
+      console.error('Failed to update user settings:', error);
+    });
+  }, []);
 
   async function updateProgress(
     courseSlug: string,
@@ -79,6 +107,7 @@ export default function VideoComponent({
       height="100%"
       width="100%"
       progressInterval={5000}
+      playbackRate={playbackSpeed}
       onProgress={async (progress: any) => {
         if (duration && duration - progress.playedSeconds < 10) {
           await updateProgress(courseSlug, lessonId, duration, true);
@@ -94,6 +123,7 @@ export default function VideoComponent({
       controls
       onReady={onReady}
       onDuration={(duration: any) => setDuration(duration)}
+      onPlaybackRateChange={handlePlaybackRateChange}
       config={{
         file: {
           forceVideo: true,
