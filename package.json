@@ -35,6 +35,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.52.2",
     "react-player": "^2.15.1",
+    "screenfull": "^6.0.2",
     "slugify": "^1.6.6",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
@@ -49,8 +50,8 @@
     "eslint-config-next": "14.1.4",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
