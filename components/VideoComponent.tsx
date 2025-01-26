@@ -26,6 +26,7 @@ export default function VideoComponent({
   courseSlug,
   onNextLesson,
   hasNextLesson,
+  lessonTitle,
 }: {
   src: string;
   progress?: number;
@@ -33,6 +34,7 @@ export default function VideoComponent({
   courseSlug: string;
   onNextLesson?: () => void;
   hasNextLesson?: boolean;
+  lessonTitle?: string;
 }) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isReady, setIsReady] = useState(false);
@@ -338,6 +340,13 @@ export default function VideoComponent({
           }
         }}
       />
+
+      {/* Lesson Title in Fullscreen */}
+      {isFullscreen && showControls && lessonTitle && (
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black via-black/50 to-transparent p-4 transition-opacity duration-300">
+          <h1 className="text-white font-bold text-xl">{lessonTitle}</h1>
+        </div>
+      )}
 
       {/* Custom Controls Overlay */}
       <div 

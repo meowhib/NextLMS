@@ -68,6 +68,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             src={`${MINIO_STORAGE_URL}/courses/${lesson.videoPath}`}
             lessonId={lesson.id}
             courseSlug={course.slug}
+            lessonTitle={lesson.title}
           />
         </div>
         <h2 className="text-2xl font-semibold mb-6">{lesson.title}</h2>
