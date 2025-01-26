@@ -280,7 +280,9 @@ export default function VideoComponent({
   return (
     <div 
       ref={containerRef}
-      className="relative w-full aspect-video bg-black group"
+      className={`relative w-full aspect-video bg-black group ${
+        isPlaying && !showControls ? 'cursor-none' : 'cursor-auto'
+      }`}
       onClick={handleContainerClick}
       onDoubleClick={handleFullscreenToggle}
       onMouseEnter={() => {
