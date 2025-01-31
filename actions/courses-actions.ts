@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { scanLocalCourses } from "@/lib/localCoursesScanner";
 import { scanBucketCourses } from "@/lib/bucketCoursesScanner";
 import { redirect } from "next/navigation";
+import { Course, CourseWithChapters, EnrolledCourseWithChapters, CourseWithProgress } from "@/types/course";
 
 export async function startLocalCoursesScan() {
   await scanLocalCourses();
@@ -17,17 +18,23 @@ export async function startBucketCoursesScan() {
   redirect("/");
 }
 
-export async function getCourses() {
+export async function getCourses(): Promise<Course[]> {
   const courses = await prisma.course.findMany({
     include: {
       chapters: {
         include: {
-          lessons: true,
+          lessons: {
+            include: {
+              progress: true,
+              attachments: true,
+            },
+          },
         },
         orderBy: {
           index: "asc",
         },
       },
+      enrollments: true,
     },
   });
 
@@ -69,7 +76,7 @@ export async function getUserCoursesWithCompletedLessons(userId: string) {
     },
   });
 
-  const result = courses.map((course) => {
+  const result = courses.map((course: CourseWithChapters) => {
     const completedLessons = course.chapters.reduce((acc, chapter) => {
       const completedInChapter = chapter.lessons.filter(
         (lesson) => lesson.progress.length > 0
@@ -87,7 +94,7 @@ export async function getUserCoursesWithCompletedLessons(userId: string) {
   return result;
 }
 
-export async function getCourse(slug: string, userId: string) {
+export async function getCourse(slug: string, userId: string): Promise<CourseWithProgress | null> {
   const course = await prisma.course.findFirst({
     where: {
       slug,
@@ -151,29 +158,42 @@ export async function getCourse(slug: string, userId: string) {
   };
 }
 
-export async function deleteCourse(slug: string) {
+export async function deleteCourse(slug: string): Promise<Course> {
   const course = await prisma.course.delete({
     where: {
       slug,
+    },
+    include: {
+      chapters: {
+        include: {
+          lessons: {
+            include: {
+              progress: true,
+              attachments: true,
+            },
+          },
+        },
+      },
+      enrollments: true,
     },
   });
 
   return course;
 }
 
-export async function countCourses() {
+export async function countCourses(): Promise<number> {
   const count = await prisma.course.count();
 
   return count;
 }
 
-export async function countLessons() {
+export async function countLessons(): Promise<number> {
   const count = await prisma.lesson.count();
 
   return count;
 }
 
-export async function countCompletedLessons() {
+export async function countCompletedLessons(): Promise<number> {
   const count = await prisma.userLessonProgress.count({
     where: {
       completed: true,
@@ -218,7 +238,7 @@ export async function getEnrolledCourses(userId: string) {
     },
   });
 
-  const result = courses.map((course) => {
+  const result = courses.map((course: EnrolledCourseWithChapters) => {
     let lastStudiedLessonId = null;
     let lastUpdatedAt = new Date(0); // Initialize with the earliest possible date
 
@@ -235,7 +255,11 @@ export async function getEnrolledCourses(userId: string) {
     }
 
     return {
-      ...course,
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      chapters: course.chapters,
+      enrollments: course.enrollments,
       lastStudiedLessonId,
     };
   });

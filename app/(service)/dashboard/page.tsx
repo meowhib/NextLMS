@@ -14,6 +14,8 @@ import { getEnrolledCourses, getCourses } from "@/actions/courses-actions";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { EnrollButton } from "@/components/EnrollButton";
+import { Course } from "@/types/course";
+import { EnrolledCourse, DashboardCourse } from "@/types/dashboard";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -22,28 +24,26 @@ export default async function DashboardPage() {
     redirect("/signin");
   }
 
-  const enrolledCourses = await getEnrolledCourses(session.user.id);
-  // console.log("Enrolled courses data:", JSON.stringify(enrolledCourses, null, 2));
-
-  const availableCourses = await getCourses();
+  const enrolledCourses = await getEnrolledCourses(session.user.id) as EnrolledCourse[];
+  const availableCourses = await getCourses() as Course[];
 
   // Filter out enrolled courses from available courses
   const unenrolledCourses = availableCourses.filter(
-    (course) => !enrolledCourses.some((enrolled) => enrolled.id === course.id)
+    (course: Course) => !enrolledCourses.some((enrolled: EnrolledCourse) => enrolled.id === course.id)
   );
 
-  const numberOfCourses = enrolledCourses.length;
-  const numberOfLessons = enrolledCourses.reduce(
-    (acc, course) =>
+  const numberOfCourses: number = enrolledCourses.length;
+  const numberOfLessons: number = enrolledCourses.reduce(
+    (acc: number, course: EnrolledCourse) =>
       acc +
-      course.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0),
+      course.chapters.reduce((acc: number, chapter) => acc + chapter.lessons.length, 0),
     0
   );
-  const numberOfCompletedLessons = enrolledCourses.reduce(
-    (acc, course) =>
+  const numberOfCompletedLessons: number = enrolledCourses.reduce(
+    (acc: number, course: EnrolledCourse) =>
       acc +
       course.chapters.reduce(
-        (acc, chapter) =>
+        (acc: number, chapter) =>
           acc +
           chapter.lessons.filter((lesson) => lesson.progress[0]?.completed)
             .length,
@@ -51,14 +51,14 @@ export default async function DashboardPage() {
       ),
     0
   );
-  const numberOfSecondsLearned = enrolledCourses.reduce(
-    (acc, course) =>
+  const numberOfSecondsLearned: number = enrolledCourses.reduce(
+    (acc: number, course: EnrolledCourse) =>
       acc +
       course.chapters.reduce(
-        (chapterAcc, chapter) =>
+        (chapterAcc: number, chapter) =>
           chapterAcc +
           chapter.lessons.reduce(
-            (lessonAcc, lesson) =>
+            (lessonAcc: number, lesson) =>
               lessonAcc + (lesson.progress[0]?.progressSeconds || 0),
             0
           ),
@@ -67,9 +67,8 @@ export default async function DashboardPage() {
     0
   );
 
-  const numberOfEnrolledCourses = enrolledCourses.length;
-  const numberOfUnenrolledCourses =
-    availableCourses.length - numberOfEnrolledCourses;
+  const numberOfEnrolledCourses: number = enrolledCourses.length;
+  const numberOfUnenrolledCourses: number = availableCourses.length - numberOfEnrolledCourses;
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -126,24 +125,24 @@ export default async function DashboardPage() {
         </h1>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
           {enrolledCourses.map((course) => {
-            const totalLessons = course.chapters.reduce(
-              (acc, chapter) => acc + chapter.lessons.length,
+            const totalLessons: number = course.chapters.reduce(
+              (acc: number, chapter) => acc + chapter.lessons.length,
               0
             );
-            const completedLessons = course.chapters.reduce(
-              (acc, chapter) =>
+            const completedLessons: number = course.chapters.reduce(
+              (acc: number, chapter) =>
                 acc +
                 chapter.lessons.filter(
                   (lesson) => lesson.progress[0]?.completed
                 ).length,
               0
             );
-            const progressPercentage = (completedLessons / totalLessons) * 100;
+            const progressPercentage: number = (completedLessons / totalLessons) * 100;
 
             // Get first lesson ID as fallback
-            const firstLessonId = course.chapters[0]?.lessons[0]?.id;
+            const firstLessonId: string | undefined = course.chapters[0]?.lessons[0]?.id;
             // Use last studied lesson or fall back to first lesson
-            const targetLessonId = course.lastStudiedLessonId ?? firstLessonId;
+            const targetLessonId: string | null | undefined = course.lastStudiedLessonId ?? firstLessonId;
 
             // console.log(`Course ${course.slug}:`, {
             //   lastStudiedLessonId: course.lastStudiedLessonId,
@@ -157,7 +156,7 @@ export default async function DashboardPage() {
               return null; // Skip rendering if no lessons available
             }
 
-            const href = course.lastStudiedLessonId 
+            const href: string = course.lastStudiedLessonId 
               ? `/course/${course.slug}/learn/${course.lastStudiedLessonId}`
               : firstLessonId 
                 ? `/course/${course.slug}/learn/${firstLessonId}`
@@ -200,7 +199,7 @@ export default async function DashboardPage() {
             Available Courses
           </h1>
           <div className="grid gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-            {unenrolledCourses.map((course) => (
+            {unenrolledCourses.map((course: Course) => (
               <Link href={`/course/${course.slug}`} key={course.slug}>
                 <Card className="group">
                   <CardHeader>

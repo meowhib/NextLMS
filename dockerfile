@@ -1,27 +1,42 @@
-# Use the official Node.js 18 image as a parent image
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS builder
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json (or pnpm-lock.yaml for pnpm)
-COPY package*.json ./
-COPY pnpm-lock.yaml ./
+# Copy package files
+COPY package*.json pnpm-lock.yaml ./
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm and dependencies with cache optimization
+RUN npm install -g pnpm && \
+    pnpm fetch && \
+    pnpm install --frozen-lockfile
 
-# Install dependencies
-RUN pnpm install
-
-# Copy the rest of your app's source code
+# Copy source code
 COPY . .
 
-# Build your Next.js app
-RUN pnpm run build
+# Generate Prisma client, run type check and build
+RUN pnpm exec prisma generate && \
+    pnpm exec tsc --noEmit && \
+    pnpm run build
 
-# Expose the port Next.js runs on
+# Production stage
+FROM node:18-alpine AS production
+
+WORKDIR /app
+
+# Copy only necessary files from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
+
+# Install only production dependencies and generate Prisma client
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile --prod && \
+    pnpm exec prisma generate
+
+ENV NODE_ENV=production
 EXPOSE 3000
 
-# Run the app
 CMD ["pnpm", "start"]

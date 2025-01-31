@@ -29,6 +29,7 @@ import {
   PlayCircle,
   Paperclip,
 } from "lucide-react";
+import { CourseChapter, CourseWithProgress, CourseAttachment, CourseLesson } from "@/types/course";
 
 interface LessonPageProps {
   params: {
@@ -55,7 +56,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   // Find the index of the chapter containing the current lesson
-  const currentChapterIndex = course.chapters.findIndex((chapter) =>
+  const currentChapterIndex = course.chapters.findIndex((chapter: CourseChapter) =>
     chapter.lessons.some((l) => l.id === lesson.id)
   );
 
@@ -83,7 +84,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4">Lesson Attachments</h3>
               <ul className="space-y-2">
-                {lesson.attachments.map((attachment) => (
+                {lesson.attachments.map((attachment: CourseAttachment) => (
                   <li key={attachment.id}>
                     <a
                       href={`https://${MINIO_STORAGE_URL}/courses/${attachment.path}`}
@@ -143,7 +144,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                     </AccordionTrigger>
                     <AccordionContent>
                       <ul className="space-y-2">
-                        {chapter.lessons.map((chapterLesson) => (
+                        {chapter.lessons.map((chapterLesson: CourseLesson) => (
                           <li key={chapterLesson.id}>
                             {chapterLesson.isAttachment ? (
                               <a
@@ -202,7 +203,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                      {chapterLesson.attachments.map((file) => (
+                                      {chapterLesson.attachments.map((file: CourseAttachment) => (
                                         <DropdownMenuItem key={file.id}>
                                           <Link
                                             href={`https://${MINIO_STORAGE_URL}/courses/${file.path}`}

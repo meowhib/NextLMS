@@ -91,7 +91,7 @@ export async function scanBucketCourses() {
 
   try {
     const courses = await prisma.course.findMany({});
-    const existingCourses = new Set(courses.map((c) => c.slug));
+    const existingCourses = new Set(courses.map((course: { slug: string }) => course.slug));
 
     const bucketExists = await minioClient.bucketExists(bucketName);
     if (!bucketExists) {

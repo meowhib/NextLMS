@@ -8,6 +8,7 @@ services:
     ports:
       - "3100:3000"
     environment:
+      - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/nextlms
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
@@ -18,11 +19,17 @@ services:
       db-migrate:
         condition: service_completed_successfully
       minio:
-        condition: service_started
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Development volumes - comment out for production
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    #   - /app/.next
 
   db:
     image: postgres:15-alpine
@@ -44,10 +51,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: builder
     command: >
       sh -c "
         echo 'Waiting for database...' &&
-        sleep 5 &&
         npx prisma migrate deploy &&
         npx prisma db seed
       "
@@ -60,8 +67,8 @@ services:
   minio:
     image: minio/minio
     ports:
-      - "9100:9000"      # API port
-      - "9101:9001"      # Console port
+      - "9100:9000"
+      - "9101:9001"
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
@@ -70,9 +77,9 @@ services:
     command: server --console-address ":9001" /data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MinIO bucket creation service
   createbuckets:
@@ -82,10 +89,11 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      sleep 10 &&
-      /usr/bin/mc config host add myminio http://minio:9000 minioadmin minioadmin &&
-      /usr/bin/mc mb myminio/courses;
-      exit 0;
+      until (/usr/bin/mc config host add myminio http://minio:9000 minioadmin minioadmin); do
+        echo 'Waiting for MinIO...' && sleep 2;
+      done &&
+      /usr/bin/mc mb myminio/courses || true &&
+      exit 0
       "
 
 volumes:
