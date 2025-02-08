@@ -1,21 +1,40 @@
 "use client"
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useChat, Message } from 'ai/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
+import { models, DEFAULT_MODEL_KEY, getAvailableProviders, getModelsByProvider } from '@/lib/models';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+} from "@/components/ui/select";
 
 interface CourseChatProps {
   courseId: string;
   courseTitle: string;
   lessonTitle: string;
   chapterTitle: string;
+  /** Optional: allow selecting the AI model */
+  initialModelKey?: string;
 }
 
-const CourseChat = ({ courseId, courseTitle, lessonTitle, chapterTitle }: CourseChatProps) => {
+const CourseChat = ({
+  courseId,
+  courseTitle,
+  lessonTitle,
+  chapterTitle,
+  initialModelKey = DEFAULT_MODEL_KEY,
+}: CourseChatProps) => {
+  const [selectedModel, setSelectedModel] = useState(initialModelKey);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +45,7 @@ const CourseChat = ({ courseId, courseTitle, lessonTitle, chapterTitle }: Course
       courseTitle,
       lessonTitle,
       chapterTitle,
+      modelKey: selectedModel,
     },
   });
 
@@ -61,7 +81,31 @@ const CourseChat = ({ courseId, courseTitle, lessonTitle, chapterTitle }: Course
   return (
     <div className="flex flex-col h-[600px] w-full rounded-lg shadow-lg bg-background text-foreground">
       <div className="p-4 rounded-t-lg bg-secondary text-secondary-foreground">
-        <h2 className="text-lg font-semibold">Course Chat</h2>
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-lg font-semibold">Course Chat</h2>
+          <Select
+            value={selectedModel}
+            onValueChange={setSelectedModel}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Model">
+                {selectedModel ? models[selectedModel].displayName : "Select Model"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {getAvailableProviders().map((provider) => (
+                <SelectGroup key={provider}>
+                  <SelectLabel className="capitalize">{provider}</SelectLabel>
+                  {Object.entries(getModelsByProvider(provider)).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.displayName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-sm text-muted-foreground">
           Ask questions about {lessonTitle} from {chapterTitle} in {courseTitle}
         </p>
