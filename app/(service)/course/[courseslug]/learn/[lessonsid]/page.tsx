@@ -30,6 +30,8 @@ import {
   Paperclip,
 } from "lucide-react";
 import { CourseChapter, CourseWithProgress, CourseAttachment, CourseLesson } from "@/types/course";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CourseChat from "@/components/CourseChat";
 
 interface LessonPageProps {
   params: {
@@ -73,43 +75,63 @@ export default async function LessonPage({ params }: LessonPageProps) {
           />
         </div>
         <h2 className="text-2xl font-semibold mb-6">{lesson.title}</h2>
-        {/* Add more lesson content here */}
-        <div className="prose max-w-none mb-6">
-          <p>Lesson content goes here...</p>
-        </div>
 
-        {/* Attachments section */}
-        {lesson.attachments ? (
-          lesson.attachments.length > 0 ? (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">Lesson Attachments</h3>
-              <ul className="space-y-2">
-                {lesson.attachments.map((attachment: CourseAttachment) => (
-                  <li key={attachment.id}>
-                    <a
-                      href={`https://${MINIO_STORAGE_URL}/courses/${attachment.path}`}
-                      download
-                      className="flex items-center p-2 hover:bg-primary/10 rounded"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <FileIcon
-                        iconType={getFileIcon(path.extname(attachment.path))}
-                      />
-                      <span className="ml-2">
-                        {path.basename(attachment.path)}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
+        <Tabs defaultValue="content" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="content">Lesson Content</TabsTrigger>
+            <TabsTrigger value="chat">AI Tutor Chat</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="content" className="mt-6">
+            <div className="prose max-w-none mb-6">
+              <p>Lesson content goes here...</p>
             </div>
-          ) : (
-            <div className="mt-8">No attachments for this lesson.</div>
-          )
-        ) : (
-          <div className="mt-8">Error: Attachments data is undefined.</div>
-        )}
+
+            {/* Attachments section */}
+            {lesson.attachments ? (
+              lesson.attachments.length > 0 ? (
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold mb-4">Lesson Attachments</h3>
+                  <ul className="space-y-2">
+                    {lesson.attachments.map((attachment: CourseAttachment) => (
+                      <li key={attachment.id}>
+                        <a
+                          href={`https://${MINIO_STORAGE_URL}/courses/${attachment.path}`}
+                          download
+                          className="flex items-center p-2 hover:bg-primary/10 rounded"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <FileIcon
+                            iconType={getFileIcon(path.extname(attachment.path))}
+                          />
+                          <span className="ml-2">
+                            {path.basename(attachment.path)}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="mt-8">No attachments for this lesson.</div>
+              )
+            ) : (
+              <div className="mt-8">Error: Attachments data is undefined.</div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-6">
+            <CourseChat 
+              courseId={course.id} 
+              courseTitle={course.title}
+              lessonTitle={lesson.title}
+              chapterTitle={course.chapters.find(chapter => 
+                chapter.lessons.some(l => l.id === lesson.id)
+              )?.title || "Unknown Chapter"}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Sidebar with Accordion */}

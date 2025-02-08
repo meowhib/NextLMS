@@ -1,0 +1,72 @@
+### **Frontend (Tabs Component with Shadcn UI)**
+
+- [ ] **Replace Accordion with Tabs**
+  - Integrate Shadcn UI’s tabs component to replace the existing accordion parent.
+  - Create two tabs:
+    - **Content Tab:** Display the course details (e.g., title, description, lesson subtitles).
+    - **Chat Tab:** Embed the chat component.
+  
+- [ ] **Chat Component Integration**
+  - Integrate the chat hook from Vercel AI SDK to fetch chat history and AI responses.
+  - Ensure the chat component accepts and displays the conversation seamlessly.
+  
+- [ ] **Model Selection UI**
+  - Implement a UI element (dropdown or toggle) that allows users to select the desired AI model (e.g., `gpt-4o-mini`, `llama3.3 70b`).
+  - Make the selection easily extensible for future models.
+
+---
+
+### **Backend (API Routes & AI Integration)**
+
+- [ ] **Chat History API**
+  - Create an API route to retrieve chat history from the database.
+  - Ensure proper pagination and error handling.
+  
+- [ ] **AI Response API**
+  - Create an API route that:
+    - Accepts user input along with the current chat history.
+    - Retrieves relevant course content (title, description, lesson subtitles) to include in the prompt.
+    - Passes the compiled prompt to the Vercel AI SDK using the selected model.
+  - Structure the prompt to include:
+    - **Chat History:** To maintain conversation context.
+    - **Course Content:** To provide context on the course material.
+  
+- [ ] **Model Selection Abstraction**
+  - Implement backend logic that dynamically routes the request to the selected model.
+  - Abstract the model integration so that adding new models in the future is straightforward.
+  
+- [ ] **Error Handling & Scalability**
+  - Include robust error handling for API requests.
+  - Log and monitor API responses for future scalability enhancements.
+
+---
+
+### **Database (Prisma Schema Updates)**
+
+- [ ] **Chat History Storage**
+  - Update the Prisma schema to include a table or fields for storing chat sessions, messages, and timestamps.
+  
+- [ ] **User Model Preferences**
+  - Add a field to store the user’s selected AI model.
+  
+- [ ] **Course-Chat Relationship**
+  - If necessary, create relations between course content and chat sessions to maintain context.
+  
+- [ ] **Run Migrations**
+  - Execute the necessary Prisma migrations to update your database schema.
+
+---
+
+### **Integration & Testing**
+
+- [ ] **End-to-End Integration**
+  - Connect the frontend tabs and chat component with the newly created API routes.
+  - Ensure that the course content and chat history are properly included in the AI prompt.
+  
+- [ ] **Unit & Integration Tests**
+  - Write tests for the API routes, ensuring proper handling of the prompt (including course content and chat history).
+  - Validate the model selection flow and error handling.
+  
+- [ ] **Documentation**
+  - Update documentation to reflect the new feature, including any configuration required for model selection.
+  - Provide clear instructions for future scalability (adding new models, modifying chat history prompts, etc.).
