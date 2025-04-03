@@ -1,5 +1,6 @@
 "use client"
 
+// Should update this with vercel ai sdk to use sonar pro from perplexity
 import React, { useRef, useEffect, useState } from 'react';
 import { useChat, Message } from 'ai/react';
 import { Button } from '@/components/ui/button';
